@@ -1,0 +1,5 @@
+spring:
+  cloud:
+    config:
+      uri: http://20.214.170.222:8888
+      name: enroll-service
