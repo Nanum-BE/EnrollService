@@ -27,6 +27,9 @@ public class HouseTour extends BaseTimeEntity {
     private Long id;
 
     @Column(nullable = false)
+    private Long houseId;
+
+    @Column(nullable = false)
     private Long roomId;
 
     @Column(nullable = false)

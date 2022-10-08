@@ -21,6 +21,7 @@ public class HouseTourDto {
 
     public HouseTour dtoToEntity() {
         return HouseTour.builder()
+                .houseId(houseId)
                 .roomId(roomId)
                 .userId(userId)
                 .tourDate(tourDate)

@@ -1,9 +1,11 @@
 package com.nanum.enrollservice.housetour.presentation;
 
 import com.nanum.common.BaseResponse;
+import com.nanum.common.Role;
 import com.nanum.enrollservice.housetour.application.HouseTourService;
 import com.nanum.enrollservice.housetour.dto.HouseTourDto;
 import com.nanum.enrollservice.housetour.vo.HouseTourRequest;
+import com.nanum.enrollservice.housetour.vo.HouseTourResponse;
 import com.nanum.exception.ExceptionResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -19,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -35,7 +38,7 @@ public class HouseTourController {
     private final HouseTourService houseTourService;
 
     @Operation(summary = "하우스 투어 신청 API", description = "사용자가 하우스 투어 신청을 하는 요청")
-    @PostMapping("/houses/{houseId}/rooms/{roomId}/tour")
+    @PostMapping("/tours/houses/{houseId}/rooms/{roomId}")
     public ResponseEntity<Object> createHouseTour(@PathVariable Long houseId, @PathVariable Long roomId,
                                                   @Valid @RequestBody HouseTourRequest houseTourRequest) {
 
@@ -46,8 +49,12 @@ public class HouseTourController {
         return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(result));
     }
 
-    //TODO #2 : 하우스 투어 신청 상태 조회 (사용자, 호스트)
-
+    @Operation(summary = "하우스 투어 신청 목록 조회", description = "사용자가 하우스 투어 신청 목록을 조회하는 요청")
+    @GetMapping("/users/{userId}/tours")
+    public ResponseEntity<Object> retrieveHouseTour(@PathVariable Long userId) {
+        List<HouseTourResponse> houseTourResponses = houseTourService.retrieveHouseTour(userId, Role.USER);
+        return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(houseTourResponses));
+    }
 
     //TODO #3 : 하우스 투어 승인/거부
 
