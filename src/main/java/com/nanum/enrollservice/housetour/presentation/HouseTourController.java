@@ -59,7 +59,7 @@ public class HouseTourController {
         return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(houseTourResponses));
     }
 
-    @Operation(summary = "하우스 투어 승인/거부", description = "호스트가 하우스 투어 신청을 승인 또는 거부하는 요청")
+    @Operation(summary = "하우스 투어 승인/거부/취소", description = "하우스 투어 신청을 승인/거부/취소하는 요청")
     @PutMapping("/tours")
     public ResponseEntity<Object> updateHouseTour(@Valid @RequestBody HouseTourUpdateRequest houseTourUpdateRequest) {
 
@@ -73,14 +73,13 @@ public class HouseTourController {
 
         if(houseTourUpdateDto.getHouseTourStatus().equals(HouseTourStatus.APPROVED)) {
             result = "하우스 투어 신청이 승인되었습니다.";
-        } else {
+        } else if(houseTourUpdateDto.getHouseTourStatus().equals(HouseTourStatus.REJECTED)) {
             result = "하우스 투어 신청이 거부되었습니다.";
+        } else {
+            result = "하우스 투어 신청이 취소되었습니다.";
         }
         return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(result));
     }
-
-    //TODO #4 : 하우스 투어 취소
-
 
     //TODO #5 : 하우스 투어 완료 처리?
 

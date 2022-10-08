@@ -67,11 +67,14 @@ public class HouseTourServiceImpl implements HouseTourService{
         }
 
         if(!houseTour.getHouseTourStatus().equals(HouseTourStatus.WAITING)) {
-            throw new OverlapException("이미 처리된 신청입니다.");
+            if(houseTourUpdateDto.getHouseTourStatus().equals(HouseTourStatus.CANCELED)) {
+                throw new OverlapException("취소할 수 없는 상태입니다.");
+            } else {
+                throw new OverlapException("이미 처리된 신청입니다.");
+            }
         }
 
         HouseTour newHouseTour = houseTourUpdateDto.toEntity(houseTour);
         houseTourRepository.save(newHouseTour);
     }
-
 }

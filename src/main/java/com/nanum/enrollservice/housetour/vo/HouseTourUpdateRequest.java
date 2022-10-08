@@ -14,6 +14,6 @@ public class HouseTourUpdateRequest {
     private Long houseTourId;
 
     @NotNull(message = "houseTourStatus cannot be null")
-    @Schema(description = "하우스 신청 승인 여부", defaultValue = "APPROVED")
+    @Schema(description = "하우스 신청 상태", defaultValue = "APPROVED")
     private HouseTourStatus houseTourStatus;
 }
