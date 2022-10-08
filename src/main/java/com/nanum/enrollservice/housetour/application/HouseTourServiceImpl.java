@@ -1,11 +1,14 @@
 package com.nanum.enrollservice.housetour.application;
 
+import com.nanum.common.HouseTourStatus;
 import com.nanum.common.Role;
 import com.nanum.enrollservice.housetour.domain.HouseTour;
 import com.nanum.enrollservice.housetour.dto.HouseTourDto;
+import com.nanum.enrollservice.housetour.dto.HouseTourUpdateDto;
 import com.nanum.enrollservice.housetour.infrastructure.HouseTourRepository;
 import com.nanum.enrollservice.housetour.vo.HouseTourResponse;
 import com.nanum.exception.DateException;
+import com.nanum.exception.NotFoundException;
 import com.nanum.exception.OverlapException;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -54,4 +57,21 @@ public class HouseTourServiceImpl implements HouseTourService{
 
         return Arrays.asList(mapper.map(houseTours, HouseTourResponse[].class));
     }
+
+    @Override
+    public void updateHouseTour(HouseTourUpdateDto houseTourUpdateDto) {
+        HouseTour houseTour = houseTourRepository.findById(houseTourUpdateDto.getHouseTourId()).orElse(null);
+
+        if(houseTour == null) {
+            throw new NotFoundException("해당 투어 신청 정보가 없습니다.");
+        }
+
+        if(!houseTour.getHouseTourStatus().equals(HouseTourStatus.WAITING)) {
+            throw new OverlapException("이미 처리된 신청입니다.");
+        }
+
+        HouseTour newHouseTour = houseTourUpdateDto.toEntity(houseTour);
+        houseTourRepository.save(newHouseTour);
+    }
+
 }

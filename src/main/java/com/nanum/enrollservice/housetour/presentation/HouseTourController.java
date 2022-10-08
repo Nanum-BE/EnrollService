@@ -1,11 +1,14 @@
 package com.nanum.enrollservice.housetour.presentation;
 
 import com.nanum.common.BaseResponse;
+import com.nanum.common.HouseTourStatus;
 import com.nanum.common.Role;
 import com.nanum.enrollservice.housetour.application.HouseTourService;
 import com.nanum.enrollservice.housetour.dto.HouseTourDto;
+import com.nanum.enrollservice.housetour.dto.HouseTourUpdateDto;
 import com.nanum.enrollservice.housetour.vo.HouseTourRequest;
 import com.nanum.enrollservice.housetour.vo.HouseTourResponse;
+import com.nanum.enrollservice.housetour.vo.HouseTourUpdateRequest;
 import com.nanum.exception.ExceptionResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -56,11 +59,30 @@ public class HouseTourController {
         return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(houseTourResponses));
     }
 
-    //TODO #3 : 하우스 투어 승인/거부
+    @Operation(summary = "하우스 투어 승인/거부", description = "호스트가 하우스 투어 신청을 승인 또는 거부하는 요청")
+    @PutMapping("/tours")
+    public ResponseEntity<Object> updateHouseTour(@Valid @RequestBody HouseTourUpdateRequest houseTourUpdateRequest) {
 
+        ModelMapper mapper = new ModelMapper();
+        mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+
+        HouseTourUpdateDto houseTourUpdateDto = mapper.map(houseTourUpdateRequest, HouseTourUpdateDto.class);
+
+        houseTourService.updateHouseTour(houseTourUpdateDto);
+        String result = "";
+
+        if(houseTourUpdateDto.getHouseTourStatus().equals(HouseTourStatus.APPROVED)) {
+            result = "하우스 투어 신청이 승인되었습니다.";
+        } else {
+            result = "하우스 투어 신청이 거부되었습니다.";
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(result));
+    }
 
     //TODO #4 : 하우스 투어 취소
 
 
     //TODO #5 : 하우스 투어 완료 처리?
+
+
 }
