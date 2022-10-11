@@ -81,7 +81,4 @@ public class HouseTourController {
         return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(result));
     }
 
-    //TODO #5 : 하우스 투어 완료 처리?
-
-
 }

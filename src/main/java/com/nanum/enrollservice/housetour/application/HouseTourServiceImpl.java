@@ -23,19 +23,22 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class HouseTourServiceImpl implements HouseTourService{
+public class HouseTourServiceImpl implements HouseTourService {
     private final HouseTourRepository houseTourRepository;
 
     @Override
     public void createHouseTour(HouseTourDto houseTourDto) {
+        List<HouseTourStatus> houseTourStatuses = List.of(HouseTourStatus.WAITING, HouseTourStatus.APPROVED);
 
-        if (houseTourRepository.existsByUserIdAndRoomId(houseTourDto.getUserId(), houseTourDto.getRoomId())) {
+        if (houseTourRepository.existsByUserIdAndRoomIdAndHouseTourStatusIn(houseTourDto.getUserId(),
+                houseTourDto.getRoomId(),
+                houseTourStatuses)) {
             throw new OverlapException("이미 신청된 방입니다.");
         }
 
         if (LocalDate.from(houseTourDto.getTourDate()).isEqual(LocalDate.from(LocalDateTime.now()))) {
             throw new DateException("투어 신청은 당일 예약이 불가능합니다.");
-        } else if(houseTourDto.getTourDate().isBefore(LocalDateTime.now())) {
+        } else if (houseTourDto.getTourDate().isBefore(LocalDateTime.now())) {
             throw new DateException("투어 날짜를 확인 해주세요.");
         }
 
@@ -48,7 +51,7 @@ public class HouseTourServiceImpl implements HouseTourService{
 
         List<HouseTour> houseTours = new ArrayList<>();
 
-        if(role.equals(Role.USER)) {
+        if (role.equals(Role.USER)) {
             houseTours = houseTourRepository.findAllByUserId(id);
         }
 
@@ -62,16 +65,36 @@ public class HouseTourServiceImpl implements HouseTourService{
     public void updateHouseTour(HouseTourUpdateDto houseTourUpdateDto) {
         HouseTour houseTour = houseTourRepository.findById(houseTourUpdateDto.getHouseTourId()).orElse(null);
 
-        if(houseTour == null) {
+        if (houseTour == null) {
             throw new NotFoundException("해당 투어 신청 정보가 없습니다.");
         }
 
-        if(!houseTour.getHouseTourStatus().equals(HouseTourStatus.WAITING)) {
-            if(houseTourUpdateDto.getHouseTourStatus().equals(HouseTourStatus.CANCELED)) {
-                throw new OverlapException("취소할 수 없는 상태입니다.");
-            } else {
-                throw new OverlapException("이미 처리된 신청입니다.");
-            }
+        switch (houseTourUpdateDto.getHouseTourStatus()) {
+            case CANCELED:
+                if (houseTour.getHouseTourStatus().equals(HouseTourStatus.CANCELED)) {
+                    throw new OverlapException("이미 처리된 요청입니다.");
+                } else if (!houseTour.getHouseTourStatus().equals(HouseTourStatus.WAITING)) {
+                    throw new OverlapException("취소할 수 없는 상태입니다.");
+                }
+                break;
+            case APPROVED:
+            case REJECTED:
+                if (!houseTour.getHouseTourStatus().equals(HouseTourStatus.WAITING)) {
+                    if(houseTour.getHouseTourStatus().equals(HouseTourStatus.CANCELED)) {
+                        throw new OverlapException("취소된 신청입니다.");
+                    } else {
+                        throw new OverlapException("이미 처리된 요청입니다.");
+                    }
+                }
+                break;
+            case TOUR_COMPLETED:
+                if (!houseTour.getHouseTourStatus().equals(HouseTourStatus.APPROVED)) {
+                    if(houseTour.getHouseTourStatus().equals(HouseTourStatus.TOUR_COMPLETED)) {
+                        throw new OverlapException("이미 처리된 요청입니다.");
+                    }
+                    throw new OverlapException("완료 처리할 수 없는 상태입니다.");
+                }
+                break;
         }
 
         HouseTour newHouseTour = houseTourUpdateDto.toEntity(houseTour);
