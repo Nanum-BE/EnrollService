@@ -59,7 +59,7 @@ public class HouseTourController {
         return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(houseTourResponses));
     }
 
-    @Operation(summary = "하우스 투어 승인/거부/취소", description = "하우스 투어 신청을 승인/거부/취소하는 요청")
+    @Operation(summary = "하우스 투어 승인/거부/취소/완료", description = "하우스 투어 신청을 승인/거부/취소/완료하는 요청")
     @PutMapping("/tours")
     public ResponseEntity<Object> updateHouseTour(@Valid @RequestBody HouseTourUpdateRequest houseTourUpdateRequest) {
 
@@ -80,5 +80,4 @@ public class HouseTourController {
         }
         return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(result));
     }
-
 }
