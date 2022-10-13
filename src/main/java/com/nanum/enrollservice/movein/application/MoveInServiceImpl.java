@@ -64,10 +64,24 @@ public class MoveInServiceImpl implements MoveInService{
             throw new NotFoundException("해당 입주 신청 정보가 없습니다.");
         }
 
-        if (moveIn.getMoveInStatus().equals(MoveInStatus.CANCELED)) {
-            throw new OverlapException("이미 처리된 요청입니다.");
-        } else if (!moveIn.getMoveInStatus().equals(MoveInStatus.WAITING)) {
-            throw new OverlapException("취소할 수 없는 상태입니다.");
+        switch (moveIn.getMoveInStatus()) {
+            case CANCELED:
+                if (moveIn.getMoveInStatus().equals(MoveInStatus.CANCELED)) {
+                    throw new OverlapException("이미 처리된 요청입니다.");
+                } else if (!moveIn.getMoveInStatus().equals(MoveInStatus.WAITING)) {
+                    throw new OverlapException("취소할 수 없는 상태입니다.");
+                }
+                break;
+            case CONTRACTING:
+            case REJECTED:
+                if (!moveIn.getMoveInStatus().equals(MoveInStatus.WAITING)) {
+                    if(moveIn.getMoveInStatus().equals(MoveInStatus.CANCELED)) {
+                        throw new OverlapException("취소된 신청입니다.");
+                    } else {
+                        throw new OverlapException("이미 처리된 요청입니다.");
+                    }
+                }
+                break;
         }
 
         MoveIn newMoveIn = moveInUpdateDto.toEntity(moveIn);

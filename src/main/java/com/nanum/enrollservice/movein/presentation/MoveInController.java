@@ -1,11 +1,7 @@
 package com.nanum.enrollservice.movein.presentation;
 
 import com.nanum.common.BaseResponse;
-import com.nanum.common.HouseTourStatus;
 import com.nanum.common.MoveInStatus;
-import com.nanum.common.Role;
-import com.nanum.enrollservice.housetour.dto.HouseTourUpdateDto;
-import com.nanum.enrollservice.housetour.vo.HouseTourResponse;
 import com.nanum.enrollservice.movein.application.MoveInService;
 import com.nanum.enrollservice.movein.dto.MoveInDto;
 import com.nanum.enrollservice.movein.dto.MoveInUpdateDto;
@@ -68,7 +64,7 @@ public class MoveInController {
         return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(moveInResponses));
     }
 
-    @Operation(summary = "하우스 입주 신청 취소 API", description = "사용자가 하우스 입주 신청을 취소하는 요청")
+    @Operation(summary = "하우스 입주 신청 취소/승인/거부 API", description = "하우스 입주 신청을 취소/승인/거부하는 요청")
     @PutMapping("/move-in")
     public ResponseEntity<Object> updateMoveIn(@Valid @RequestBody MoveInUpdateRequest moveInUpdateRequest) {
         ModelMapper mapper = new ModelMapper();
@@ -77,7 +73,15 @@ public class MoveInController {
         MoveInUpdateDto moveInUpdateDto = mapper.map(moveInUpdateRequest, MoveInUpdateDto.class);
 
         moveInService.updateMoveIn(moveInUpdateDto);
-        String result = "하우스 입주 신청이 취소되었습니다.";
+        String result;
+
+        if(moveInUpdateRequest.getMoveInStatus().equals(MoveInStatus.CONTRACTING)) {
+            result = "하우스 입주 신청이 승인되었습니다.";
+        } else if(moveInUpdateRequest.getMoveInStatus().equals(MoveInStatus.REJECTED)) {
+            result = "하우스 입주 신청이 거부되었습니다.";
+        } else {
+            result = "하우스 입주 신청이 취소되었습니다.";
+        }
 
         return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(result));
     }
