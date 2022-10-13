@@ -29,7 +29,7 @@ eureka:
 
 springdoc:
   api-docs:
-    path: /api-docs/json
+    path: /openapi/enroll-service
     groups:
       enabled: true
   default-produces-media-type: application/json;charset=UTF-8
