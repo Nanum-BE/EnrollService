@@ -1,16 +1,26 @@
 package com.nanum.enrollservice.movein.presentation;
 
 import com.nanum.common.BaseResponse;
+import com.nanum.common.MoveInStatus;
+import com.nanum.enrollservice.housetour.dto.HouseTourUpdateDto;
 import com.nanum.enrollservice.movein.application.MoveInService;
+import com.nanum.enrollservice.movein.dto.MoveInDto;
+import com.nanum.enrollservice.movein.vo.MoveInRequest;
 import com.nanum.exception.ExceptionResponse;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.modelmapper.ModelMapper;
+import org.modelmapper.convention.MatchingStrategies;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -25,4 +35,22 @@ import org.springframework.web.bind.annotation.RestController;
 public class MoveInController {
     private final MoveInService moveInService;
 
+    @Operation(summary = "하우스 입주 신청 API", description = "사용자가 하우스 입주 신청을 하는 요청")
+    @PostMapping("/move-in/houses/{houseId}/rooms/{roomId}")
+    public ResponseEntity<Object> createMoveIn(@PathVariable Long houseId, @PathVariable Long roomId,
+                             @Valid @RequestBody MoveInRequest moveInRequest) {
+
+        ModelMapper mapper = new ModelMapper();
+        mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+
+        MoveInDto moveInDto = mapper.map(moveInRequest, MoveInDto.class);
+        moveInDto.setHouseId(houseId);
+        moveInDto.setRoomId(roomId);
+        moveInDto.setMoveInStatus(MoveInStatus.WAITING);
+
+        moveInService.createMoveIn(moveInDto);
+
+        String result = "하우스 투어 신청이 완료되었습니다.";
+        return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(result));
+    }
 }

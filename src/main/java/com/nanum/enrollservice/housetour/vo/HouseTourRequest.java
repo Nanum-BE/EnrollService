@@ -19,7 +19,7 @@ public class HouseTourRequest {
     private Long userId;
 
     @NotNull(message = "tourDate cannot be null")
-    @Schema(description = "투어 희망 날짜", defaultValue = "1")
+    @Schema(description = "투어 희망 날짜", defaultValue = "2022-10-12T20:00:00")
     private LocalDateTime tourDate;
 
     @Schema(description = "문의내용", defaultValue = "저녁 시간대에도 투어 가능할까요?")
