@@ -8,4 +8,5 @@ import java.util.List;
 
 public interface MoveInRepository extends JpaRepository<MoveIn, Long> {
     boolean existsByUserIdAndRoomIdAndMoveInStatusIn(Long userId, Long roomId, List<MoveInStatus> moveInStatus);
+    List<MoveIn> findAllByUserId(Long userId);
 }

@@ -1,16 +1,22 @@
 package com.nanum.enrollservice.movein.application;
 
 import com.nanum.common.MoveInStatus;
+import com.nanum.enrollservice.housetour.vo.HouseTourResponse;
 import com.nanum.enrollservice.movein.domain.MoveIn;
 import com.nanum.enrollservice.movein.dto.MoveInDto;
 import com.nanum.enrollservice.movein.infrastructure.MoveInRepository;
+import com.nanum.enrollservice.movein.vo.MoveInResponse;
 import com.nanum.exception.DateException;
 import com.nanum.exception.OverlapException;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
+import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -37,5 +43,16 @@ public class MoveInServiceImpl implements MoveInService{
         MoveIn moveIn = moveInDto.toEntity();
 
         moveInRepository.save(moveIn);
+    }
+
+    @Override
+    public List<MoveInResponse> retrieveMoveIn(Long userId) {
+
+        List<MoveIn> moveIns = moveInRepository.findAllByUserId(userId);
+
+        ModelMapper mapper = new ModelMapper();
+        mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+
+        return Arrays.asList(mapper.map(moveIns, MoveInResponse[].class));
     }
 }

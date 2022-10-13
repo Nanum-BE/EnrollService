@@ -2,10 +2,13 @@ package com.nanum.enrollservice.movein.presentation;
 
 import com.nanum.common.BaseResponse;
 import com.nanum.common.MoveInStatus;
+import com.nanum.common.Role;
 import com.nanum.enrollservice.housetour.dto.HouseTourUpdateDto;
+import com.nanum.enrollservice.housetour.vo.HouseTourResponse;
 import com.nanum.enrollservice.movein.application.MoveInService;
 import com.nanum.enrollservice.movein.dto.MoveInDto;
 import com.nanum.enrollservice.movein.vo.MoveInRequest;
+import com.nanum.enrollservice.movein.vo.MoveInResponse;
 import com.nanum.exception.ExceptionResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -21,6 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -52,5 +56,12 @@ public class MoveInController {
 
         String result = "하우스 투어 신청이 완료되었습니다.";
         return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(result));
+    }
+
+    @Operation(summary = "하우스 입주 신청 조회 API", description = "사용자가 하우스 입주 신청 목록을 조회하는 요청")
+    @GetMapping("/users/{userId}/move-in")
+    public ResponseEntity<Object> retrieveMoveIn(@PathVariable Long userId) {
+        List<MoveInResponse> moveInResponses = moveInService.retrieveMoveIn(userId);
+        return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(moveInResponses));
     }
 }

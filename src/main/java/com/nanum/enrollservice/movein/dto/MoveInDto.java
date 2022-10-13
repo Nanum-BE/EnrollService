@@ -14,7 +14,7 @@ public class MoveInDto {
     private Long roomId;
     private Long userId;
     private LocalDateTime moveDate;
-    private String questionContent;
+    private String inquiry;
     private MoveInStatus moveInStatus;
 
     public MoveIn toEntity() {
@@ -23,7 +23,7 @@ public class MoveInDto {
                 .roomId(roomId)
                 .userId(userId)
                 .moveDate(moveDate)
-                .questionContent(questionContent)
+                .inquiry(inquiry)
                 .moveInStatus(moveInStatus)
                 .build();
     }

@@ -41,7 +41,7 @@ public class MoveIn extends BaseTimeEntity {
     private LocalDateTime moveDate;
 
     @Comment("문의 내용")
-    private String questionContent;
+    private String inquiry;
 
     @Comment("입주 신청 상태 -> 대기 중, 계약 중, 거부됨, 취소됨, 계약 완료됨")
     @Enumerated(EnumType.STRING)

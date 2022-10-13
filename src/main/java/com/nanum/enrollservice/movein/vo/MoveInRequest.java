@@ -19,5 +19,5 @@ public class MoveInRequest {
     private LocalDateTime moveDate;
 
     @Schema(description = "문의 내용", defaultValue = "문의 내용 테스트")
-    private String questionContent;
+    private String inquiry;
 }
