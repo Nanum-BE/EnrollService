@@ -1,12 +1,13 @@
 package com.nanum.enrollservice.movein.application;
 
 import com.nanum.common.MoveInStatus;
-import com.nanum.enrollservice.housetour.vo.HouseTourResponse;
 import com.nanum.enrollservice.movein.domain.MoveIn;
 import com.nanum.enrollservice.movein.dto.MoveInDto;
+import com.nanum.enrollservice.movein.dto.MoveInUpdateDto;
 import com.nanum.enrollservice.movein.infrastructure.MoveInRepository;
 import com.nanum.enrollservice.movein.vo.MoveInResponse;
 import com.nanum.exception.DateException;
+import com.nanum.exception.NotFoundException;
 import com.nanum.exception.OverlapException;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -15,7 +16,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -54,5 +54,23 @@ public class MoveInServiceImpl implements MoveInService{
         mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
 
         return Arrays.asList(mapper.map(moveIns, MoveInResponse[].class));
+    }
+
+    @Override
+    public void updateMoveIn(MoveInUpdateDto moveInUpdateDto) {
+        MoveIn moveIn = moveInRepository.findById(moveInUpdateDto.getMoveInId()).orElse(null);
+
+        if (moveIn == null) {
+            throw new NotFoundException("해당 입주 신청 정보가 없습니다.");
+        }
+
+        if (moveIn.getMoveInStatus().equals(MoveInStatus.CANCELED)) {
+            throw new OverlapException("이미 처리된 요청입니다.");
+        } else if (!moveIn.getMoveInStatus().equals(MoveInStatus.WAITING)) {
+            throw new OverlapException("취소할 수 없는 상태입니다.");
+        }
+
+        MoveIn newMoveIn = moveInUpdateDto.toEntity(moveIn);
+        moveInRepository.save(newMoveIn);
     }
 }

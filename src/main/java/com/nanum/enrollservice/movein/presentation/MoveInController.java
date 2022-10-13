@@ -1,14 +1,17 @@
 package com.nanum.enrollservice.movein.presentation;
 
 import com.nanum.common.BaseResponse;
+import com.nanum.common.HouseTourStatus;
 import com.nanum.common.MoveInStatus;
 import com.nanum.common.Role;
 import com.nanum.enrollservice.housetour.dto.HouseTourUpdateDto;
 import com.nanum.enrollservice.housetour.vo.HouseTourResponse;
 import com.nanum.enrollservice.movein.application.MoveInService;
 import com.nanum.enrollservice.movein.dto.MoveInDto;
+import com.nanum.enrollservice.movein.dto.MoveInUpdateDto;
 import com.nanum.enrollservice.movein.vo.MoveInRequest;
 import com.nanum.enrollservice.movein.vo.MoveInResponse;
+import com.nanum.enrollservice.movein.vo.MoveInUpdateRequest;
 import com.nanum.exception.ExceptionResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -64,4 +67,19 @@ public class MoveInController {
         List<MoveInResponse> moveInResponses = moveInService.retrieveMoveIn(userId);
         return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(moveInResponses));
     }
+
+    @Operation(summary = "하우스 입주 신청 취소 API", description = "사용자가 하우스 입주 신청을 취소하는 요청")
+    @PutMapping("/move-in")
+    public ResponseEntity<Object> updateMoveIn(@Valid @RequestBody MoveInUpdateRequest moveInUpdateRequest) {
+        ModelMapper mapper = new ModelMapper();
+        mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+
+        MoveInUpdateDto moveInUpdateDto = mapper.map(moveInUpdateRequest, MoveInUpdateDto.class);
+
+        moveInService.updateMoveIn(moveInUpdateDto);
+        String result = "하우스 입주 신청이 취소되었습니다.";
+
+        return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(result));
+    }
+
 }
