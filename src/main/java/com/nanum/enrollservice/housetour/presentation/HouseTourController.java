@@ -8,6 +8,7 @@ import com.nanum.enrollservice.housetour.dto.HouseTourDto;
 import com.nanum.enrollservice.housetour.dto.HouseTourUpdateDto;
 import com.nanum.enrollservice.housetour.vo.HouseTourRequest;
 import com.nanum.enrollservice.housetour.vo.HouseTourResponse;
+import com.nanum.enrollservice.housetour.vo.HouseTourTimeResponse;
 import com.nanum.enrollservice.housetour.vo.HouseTourUpdateRequest;
 import com.nanum.exception.ExceptionResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -19,11 +20,13 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -71,13 +74,21 @@ public class HouseTourController {
         houseTourService.updateHouseTour(houseTourUpdateDto);
         String result = "";
 
-        if(houseTourUpdateDto.getHouseTourStatus().equals(HouseTourStatus.APPROVED)) {
+        if (houseTourUpdateDto.getHouseTourStatus().equals(HouseTourStatus.APPROVED)) {
             result = "하우스 투어 신청이 승인되었습니다.";
-        } else if(houseTourUpdateDto.getHouseTourStatus().equals(HouseTourStatus.REJECTED)) {
+        } else if (houseTourUpdateDto.getHouseTourStatus().equals(HouseTourStatus.REJECTED)) {
             result = "하우스 투어 신청이 거부되었습니다.";
         } else {
             result = "하우스 투어 신청이 취소되었습니다.";
         }
         return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(result));
+    }
+
+    @Operation(summary = "투어 신청시 날짜 선택했을 경우", description = "날짜를 선택하면 시간들에 대해 반환")
+    @GetMapping("/tours/houses/{houseId}/date/{date}")
+    public ResponseEntity<Object> retrieveTime(@PathVariable Long houseId,
+                                               @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date) {
+        List<HouseTourTimeResponse> houseTourTimeResponses = houseTourService.retrieveTourTime(houseId, date);
+        return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(houseTourTimeResponses));
     }
 }

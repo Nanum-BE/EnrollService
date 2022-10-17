@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @SpringBootTest
@@ -45,7 +46,7 @@ class HouseTourControllerTest {
         Long houseId = 1L;
         Long roomId = 1L;
 
-        HouseTourRequest houseTourRequest = new HouseTourRequest(100L, LocalDateTime.parse("2022-10-14T20:00:00"), "저녁 시간대에도 투어 가능할까요?");
+        HouseTourRequest houseTourRequest = new HouseTourRequest(100L, LocalDate.parse("2022-10-14T20:00:00"), 1L, "저녁 시간대에도 투어 가능할까요?");
         HouseTourDto houseTourDto = houseTourRequest.toHouseTourDto(houseId, roomId);
 
         // when
@@ -70,7 +71,7 @@ class HouseTourControllerTest {
         Long houseId = 1L;
         Long roomId = 1L;
 
-        HouseTourRequest houseTourRequest = new HouseTourRequest(100L, LocalDateTime.parse("2022-09-14T20:00:00"), "저녁 시간대에도 투어 가능할까요?");
+        HouseTourRequest houseTourRequest = new HouseTourRequest(100L, LocalDate.parse("2022-09-14T20:00:00"), 1L, "저녁 시간대에도 투어 가능할까요?");
         HouseTourDto houseTourDto = houseTourRequest.toHouseTourDto(houseId, roomId);
 
         // when
