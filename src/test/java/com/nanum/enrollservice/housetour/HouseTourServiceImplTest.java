@@ -2,8 +2,10 @@ package com.nanum.enrollservice.housetour;
 
 import com.nanum.common.HouseTourStatus;
 import com.nanum.enrollservice.housetour.domain.HouseTour;
+import com.nanum.enrollservice.housetour.domain.HouseTourTime;
 import com.nanum.enrollservice.housetour.dto.HouseTourDto;
 import com.nanum.enrollservice.housetour.infrastructure.HouseTourRepository;
+import com.nanum.enrollservice.housetour.infrastructure.HouseTourTimeRepository;
 import com.nanum.enrollservice.housetour.vo.HouseTourRequest;
 import com.nanum.exception.DateException;
 import com.nanum.exception.OverlapException;
@@ -26,6 +28,9 @@ class HouseTourServiceImplTest {
     @Autowired
     HouseTourRepository houseTourRepository;
 
+    @Autowired
+    HouseTourTimeRepository houseTourTimeRepository;
+
     @BeforeEach
     void setUp() {
         log.info("===== 테스트 시작 =====");
@@ -45,7 +50,7 @@ class HouseTourServiceImplTest {
         Long houseId = 1L;
         Long roomId = 1L;
 
-        HouseTourRequest houseTourRequest = new HouseTourRequest(1L, LocalDateTime.parse("2022-10-14T20:00:00"), "저녁 시간대에도 투어 가능할까요?");
+        HouseTourRequest houseTourRequest = new HouseTourRequest(1L, LocalDate.parse("2022-10-14T20:00:00"), 1L,"저녁 시간대에도 투어 가능할까요?");
         HouseTourDto houseTourDto = houseTourRequest.toHouseTourDto(houseId, roomId);
 
         // when
@@ -59,11 +64,13 @@ class HouseTourServiceImplTest {
 
         if (LocalDate.from(houseTourDto.getTourDate()).isEqual(LocalDate.from(LocalDateTime.now()))) {
             throw new DateException("투어 신청은 당일 예약이 불가능합니다.");
-        } else if (houseTourDto.getTourDate().isBefore(LocalDateTime.now())) {
+        } else if (houseTourDto.getTourDate().isBefore(LocalDate.from(LocalDateTime.now()))) {
             throw new DateException("투어 날짜를 확인 해주세요.");
         }
 
-        HouseTour houseTour = houseTourDto.dtoToEntity();
+        HouseTourTime houseTourTime = houseTourTimeRepository.findById(houseTourDto.getTimeId()).get();
+
+        HouseTour houseTour = houseTourDto.dtoToEntity(houseTourTime);
         HouseTour savedTour = houseTourRepository.save(houseTour);
 
         // then
