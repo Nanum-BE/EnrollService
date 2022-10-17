@@ -11,7 +11,7 @@ import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Entity
 @Getter
@@ -37,7 +37,7 @@ public class HouseTour extends BaseTimeEntity {
 
     @Column(nullable = false)
     @Comment("희망 투어 날짜 -> 당일 예약 불가")
-    private LocalDateTime tourDate;
+    private LocalDate tourDate;
 
     @Comment("문의 내용")
     private String inquiry;
@@ -45,4 +45,7 @@ public class HouseTour extends BaseTimeEntity {
     @Comment("투어 상태 -> 대기 중, 승인, 거부, 취소, 투어 완료")
     @Enumerated(EnumType.STRING)
     private HouseTourStatus houseTourStatus;
+
+    @OneToOne
+    HouseTourTime houseTourTime;
 }

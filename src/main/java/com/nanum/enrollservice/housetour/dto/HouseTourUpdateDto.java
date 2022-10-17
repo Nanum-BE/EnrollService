@@ -2,6 +2,7 @@ package com.nanum.enrollservice.housetour.dto;
 
 import com.nanum.common.HouseTourStatus;
 import com.nanum.enrollservice.housetour.domain.HouseTour;
+import com.nanum.enrollservice.housetour.domain.HouseTourTime;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -17,6 +18,10 @@ public class HouseTourUpdateDto {
                 .houseId(houseTour.getHouseId())
                 .roomId(houseTour.getRoomId())
                 .userId(houseTour.getUserId())
+                .houseTourTime(HouseTourTime.builder()
+                        .id(houseTour.getHouseTourTime().getId())
+                        .time(houseTour.getHouseTourTime().getTime())
+                        .build())
                 .tourDate(houseTour.getTourDate())
                 .inquiry(houseTour.getInquiry())
                 .houseTourStatus(houseTourStatus)
