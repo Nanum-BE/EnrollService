@@ -10,7 +10,10 @@ import com.nanum.enrollservice.movein.vo.MoveInResponse;
 import com.nanum.exception.DateException;
 import com.nanum.exception.NotFoundException;
 import com.nanum.exception.OverlapException;
+import com.nanum.kafka.dto.KafkaRoomDto;
+import com.nanum.kafka.messagequeue.KafkaProducerImpl;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.stereotype.Service;
@@ -23,13 +26,26 @@ import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MoveInServiceImpl implements MoveInService {
 
     private final MoveInRepository moveInRepository;
     private final HouseTourRepository houseTourRepository;
+    private final KafkaProducerImpl kafkaProducer;
+    private final KafkaRoomDto kafkaRoomDto;
 
     @Override
     public void createMoveIn(MoveInDto moveInDto, Long userId) {
+
+        MoveIn moveIn = moveInRepository.findFirstByHouseIdAndRoomIdOrderByUpdateAtDesc(moveInDto.getHouseId(), moveInDto.getRoomId());
+
+        if (moveIn.getMoveInStatus() != null) {
+            if (moveIn.getMoveInStatus().equals(MoveInStatus.WAITING) || moveIn.getMoveInStatus().equals(MoveInStatus.CONTRACTING)
+                    || moveIn.getMoveInStatus().equals(MoveInStatus.CONTRACT_COMPLETED)) {
+                throw new OverlapException("이미 신청이 완료된 방입니다.");
+            }
+        }
+
         if (!Objects.equals(houseTourRepository.getByUserIdAndRoomIdAndHouseId
                 (userId, moveInDto.getRoomId(), moveInDto.getHouseId()), "TOUR_COMPLETED")) {
             throw new OverlapException("투어 신청이 완료되지 않은 방입니다");
@@ -37,7 +53,7 @@ public class MoveInServiceImpl implements MoveInService {
         List<MoveInStatus> moveInStatuses = List.of(MoveInStatus.WAITING, MoveInStatus.CONTRACTING);
 
         if (moveInRepository.existsByUserIdAndRoomIdAndMoveInStatusIn(userId, moveInDto.getRoomId(), moveInStatuses)) {
-            throw new OverlapException("이미 신청된 방입니다.");
+            throw new OverlapException("이미 신청이 완료된 방입니다.");
         }
 
         if (LocalDate.from(moveInDto.getMoveDate()).isEqual(LocalDate.from(LocalDateTime.now()))) {
@@ -46,9 +62,9 @@ public class MoveInServiceImpl implements MoveInService {
             throw new DateException("입주 날짜를 확인 해주세요.");
         }
 
-        MoveIn moveIn = moveInDto.toEntity(userId);
+        MoveIn toMoveIn = moveInDto.toEntity(userId);
 
-        moveInRepository.save(moveIn);
+        moveInRepository.save(toMoveIn);
     }
 
     @Override
@@ -81,6 +97,11 @@ public class MoveInServiceImpl implements MoveInService {
                 }
                 break;
             case CONTRACTING:
+                kafkaProducer.send("house-topic",
+                        KafkaRoomDto.builder()
+                                .roomId(moveIn.getRoomId())
+                                .message("contract")
+                                .build());
             case REJECTED:
                 if (!moveIn.getMoveInStatus().equals(MoveInStatus.WAITING)) {
                     if (moveIn.getMoveInStatus().equals(MoveInStatus.CANCELED)) {
@@ -97,6 +118,11 @@ public class MoveInServiceImpl implements MoveInService {
                     }
                     throw new OverlapException("완료 처리할 수 없는 상태입니다");
                 }
+                kafkaProducer.send("house-topic",
+                        KafkaRoomDto.builder()
+                                .roomId(moveIn.getRoomId())
+                                .message("completed")
+                                .build());
                 break;
         }
 
