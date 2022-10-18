@@ -30,10 +30,10 @@ public class HouseTourServiceImpl implements HouseTourService {
     private final HouseTourTimeRepository houseTourTimeRepository;
 
     @Override
-    public void createHouseTour(HouseTourDto houseTourDto) {
+    public void createHouseTour(HouseTourDto houseTourDto, Long userId) {
         List<HouseTourStatus> houseTourStatuses = List.of(HouseTourStatus.WAITING, HouseTourStatus.APPROVED);
 
-        if (houseTourRepository.existsByUserIdAndRoomIdAndHouseTourStatusIn(houseTourDto.getUserId(),
+        if (houseTourRepository.existsByUserIdAndRoomIdAndHouseTourStatusIn(userId,
                 houseTourDto.getRoomId(),
                 houseTourStatuses)) {
             throw new OverlapException("이미 신청된 방입니다.");
@@ -47,7 +47,7 @@ public class HouseTourServiceImpl implements HouseTourService {
 
         HouseTourTime houseTourTime = houseTourTimeRepository.findById(houseTourDto.getTimeId()).get();
 
-        HouseTour houseTour = houseTourDto.dtoToEntity(houseTourTime);
+        HouseTour houseTour = houseTourDto.dtoToEntity(houseTourTime, userId);
 
         houseTourRepository.save(houseTour);
     }
@@ -60,6 +60,11 @@ public class HouseTourServiceImpl implements HouseTourService {
         if (role.equals(Role.USER)) {
             tours = houseTourRepository.findAllByUserId(id);
         }
+
+        if (tours.isEmpty()) {
+            throw new NotFoundException("예약된 투어 신청이 없습니다");
+        }
+
         tours.forEach(houseTour -> {
 
             houseTours.add(HouseTourResponse.builder()

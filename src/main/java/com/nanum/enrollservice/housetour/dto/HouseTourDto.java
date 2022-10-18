@@ -14,7 +14,6 @@ import java.time.LocalDateTime;
 @Builder
 @Getter
 public class HouseTourDto {
-    private Long userId;
     private Long houseId;
     private Long roomId;
     private Long timeId;
@@ -22,7 +21,7 @@ public class HouseTourDto {
     private String inquiry;
     private HouseTourStatus houseTourStatus;
 
-    public HouseTour dtoToEntity(HouseTourTime houseTourTime) {
+    public HouseTour dtoToEntity(HouseTourTime houseTourTime, Long userId) {
         return HouseTour.builder()
                 .houseId(houseId)
                 .roomId(roomId)
