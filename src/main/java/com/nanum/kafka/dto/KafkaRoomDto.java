@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 @Data
 @Builder
 @AllArgsConstructor
-@NoArgsConstructor
 public class KafkaRoomDto {
     private Long roomId;
     private String message;

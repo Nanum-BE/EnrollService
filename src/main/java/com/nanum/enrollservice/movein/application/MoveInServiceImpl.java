@@ -32,7 +32,6 @@ public class MoveInServiceImpl implements MoveInService {
     private final MoveInRepository moveInRepository;
     private final HouseTourRepository houseTourRepository;
     private final KafkaProducerImpl kafkaProducer;
-    private final KafkaRoomDto kafkaRoomDto;
 
     @Override
     public void createMoveIn(MoveInDto moveInDto, Long userId) {
