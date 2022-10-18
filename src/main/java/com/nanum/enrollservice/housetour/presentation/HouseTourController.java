@@ -11,6 +11,7 @@ import com.nanum.enrollservice.housetour.vo.HouseTourResponse;
 import com.nanum.enrollservice.housetour.vo.HouseTourTimeResponse;
 import com.nanum.enrollservice.housetour.vo.HouseTourUpdateRequest;
 import com.nanum.exception.ExceptionResponse;
+import com.nanum.utils.jwt.JwtTokenProvider;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -18,6 +19,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -26,12 +28,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.ValidationException;
 import java.time.LocalDate;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
+@Slf4j
 @Tag(name = "하우스 투어 신청", description = "하우스 투어 신청 관련 api")
 @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "success", content = @Content(schema = @Schema(implementation = BaseResponse.class))),
@@ -42,14 +46,22 @@ import java.util.List;
 public class HouseTourController {
 
     private final HouseTourService houseTourService;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Operation(summary = "하우스 투어 신청 API", description = "사용자가 하우스 투어 신청을 하는 요청")
     @PostMapping("/tours/houses/{houseId}/rooms/{roomId}")
     public ResponseEntity<Object> createHouseTour(@PathVariable Long houseId, @PathVariable Long roomId,
                                                   @Valid @RequestBody HouseTourRequest houseTourRequest) {
-
+        String token = jwtTokenProvider.customResolveToken();
+        log.info(token);
+        boolean isValid = jwtTokenProvider.isJwtValid(token);
+        if (!isValid) {
+            throw new ValidationException("토큰 유효성 검증에 실패했습니다.");
+        }
+        Long userId = jwtTokenProvider.getUserPk(token);
+        log.info(String.valueOf(userId));
         HouseTourDto houseTourDto = houseTourRequest.toHouseTourDto(houseId, roomId);
-        houseTourService.createHouseTour(houseTourDto);
+        houseTourService.createHouseTour(houseTourDto, userId);
 
         String result = "하우스 투어 신청이 완료되었습니다.";
         return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(result));
@@ -78,6 +90,8 @@ public class HouseTourController {
             result = "하우스 투어 신청이 승인되었습니다.";
         } else if (houseTourUpdateDto.getHouseTourStatus().equals(HouseTourStatus.REJECTED)) {
             result = "하우스 투어 신청이 거부되었습니다.";
+        } else if (houseTourUpdateDto.getHouseTourStatus().equals(HouseTourStatus.TOUR_COMPLETED)) {
+            result = "하우스 투어가 완료되었습니다.";
         } else {
             result = "하우스 투어 신청이 취소되었습니다.";
         }

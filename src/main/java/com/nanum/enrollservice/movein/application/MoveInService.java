@@ -7,7 +7,7 @@ import com.nanum.enrollservice.movein.vo.MoveInResponse;
 import java.util.List;
 
 public interface MoveInService {
-    void createMoveIn(MoveInDto moveInDto);
+    void createMoveIn(MoveInDto moveInDto, Long userId);
     List<MoveInResponse> retrieveMoveIn(Long userId);
     void updateMoveIn(MoveInUpdateDto moveInUpdateDto);
 }
