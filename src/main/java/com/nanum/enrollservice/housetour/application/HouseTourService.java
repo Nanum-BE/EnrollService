@@ -13,5 +13,5 @@ public interface HouseTourService {
     void createHouseTour(HouseTourDto houseTourDto);
     List<HouseTourResponse> retrieveHouseTour(Long id, Role role);
     void updateHouseTour(HouseTourUpdateDto houseTourUpdateDto);
-    List<HouseTourTimeResponse> retrieveTourTime(Long houseId, LocalDate date);
+    List<HouseTourTimeResponse> retrieveTourTime(Long houseId, Long roomId, LocalDate date);
 }

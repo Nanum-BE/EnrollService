@@ -127,25 +127,29 @@ public class HouseTourServiceImpl implements HouseTourService {
     }
 
     @Override
-    public List<HouseTourTimeResponse> retrieveTourTime(Long houseId, LocalDate date) {
-        HouseTour houseTour = houseTourRepository.findById(houseId).orElse(null);
-
-        if (houseTour == null) {
-            throw new NotFoundException("해당 하우스에 대한 정보가 없습니다.");
-        }
+    public List<HouseTourTimeResponse> retrieveTourTime(Long houseId, Long roomId, LocalDate date) {
 
         List<HouseTourTime> timeList = houseTourTimeRepository.findAll();
-        List<HouseTour> tours = houseTourRepository.findAllByHouseIdAndTourDate(houseId, date);
-
+        List<HouseTour> tours = houseTourRepository.findAllByHouseIdAndRoomIdAndTourDate(houseId, roomId, date);
         List<HouseTourTimeResponse> houseTourTimeResponses = new ArrayList<>();
-        timeList.forEach(houseTourTime -> {
-            houseTourTimeResponses.add(HouseTourTimeResponse.builder()
-                    .timeId(houseTourTime.getId())
-                    .time(houseTourTime.getTime())
-                    .isAvailable(tours.stream().noneMatch(t ->
-                            t.getHouseTourTime().getId().equals(houseTourTime.getId())))
-                    .build());
-        });
+
+        if (tours == null) {
+            timeList.forEach(houseTourTime -> {
+                houseTourTimeResponses.add(HouseTourTimeResponse.builder()
+                        .timeId(houseTourTime.getId())
+                        .time(houseTourTime.getTime())
+                        .isAvailable(true)
+                        .build());
+            });
+        } else
+            timeList.forEach(houseTourTime -> {
+                houseTourTimeResponses.add(HouseTourTimeResponse.builder()
+                        .timeId(houseTourTime.getId())
+                        .time(houseTourTime.getTime())
+                        .isAvailable(tours.stream().noneMatch(t ->
+                                t.getHouseTourTime().getId().equals(houseTourTime.getId())))
+                        .build());
+            });
 
         return houseTourTimeResponses;
     }
