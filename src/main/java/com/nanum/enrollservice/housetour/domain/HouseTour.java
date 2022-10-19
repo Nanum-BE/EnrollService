@@ -36,6 +36,9 @@ public class HouseTour extends BaseTimeEntity {
     private Long userId;
 
     @Column(nullable = false)
+    private Long hostId;
+
+    @Column(nullable = false)
     @Comment("희망 투어 날짜 -> 당일 예약 불가")
     private LocalDate tourDate;
 

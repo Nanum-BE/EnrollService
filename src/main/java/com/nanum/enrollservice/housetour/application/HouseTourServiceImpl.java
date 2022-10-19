@@ -6,6 +6,7 @@ import com.nanum.common.RoomStatus;
 import com.nanum.enrollservice.client.HouseServiceClient;
 import com.nanum.enrollservice.client.vo.FeignResponse;
 import com.nanum.enrollservice.client.vo.HostRoomResponse;
+import com.nanum.enrollservice.client.vo.HouseResponse;
 import com.nanum.enrollservice.housetour.domain.HouseTour;
 import com.nanum.enrollservice.housetour.domain.HouseTourTime;
 import com.nanum.enrollservice.housetour.dto.HouseTourDto;
@@ -40,7 +41,8 @@ public class HouseTourServiceImpl implements HouseTourService {
     public void createHouseTour(HouseTourDto houseTourDto, Long userId) {
         List<HouseTourStatus> houseTourStatuses = List.of(HouseTourStatus.WAITING, HouseTourStatus.APPROVED);
         FeignResponse<HostRoomResponse> houseStatus = houseServiceClient.getHouseStatus(houseTourDto.getHouseId(), houseTourDto.getRoomId());
-
+        FeignResponse<HouseResponse> houseDetails = houseServiceClient.getHouseDetails(houseTourDto.getHouseId());
+        log.info(String.valueOf(houseDetails.getResult().getHostId()));
         if (!houseStatus.getResult().getRoom().getStatus().equals(RoomStatus.WAITING)) {
             throw new OverlapException("투어 신청 불가능한 방입니다");
         }
@@ -59,7 +61,7 @@ public class HouseTourServiceImpl implements HouseTourService {
 
         HouseTourTime houseTourTime = houseTourTimeRepository.findById(houseTourDto.getTimeId()).get();
 
-        HouseTour houseTour = houseTourDto.dtoToEntity(houseTourTime, userId);
+        HouseTour houseTour = houseTourDto.dtoToEntity(houseTourTime, userId, houseDetails.getResult().getHostId());
 
         houseTourRepository.save(houseTour);
     }
@@ -71,6 +73,9 @@ public class HouseTourServiceImpl implements HouseTourService {
         List<HouseTour> tours = new ArrayList<>();
         if (role.equals(Role.USER)) {
             tours = houseTourRepository.findAllByUserId(id);
+        }
+        if (role.equals(Role.HOST)) {
+            tours = houseTourRepository.findAllByHostId(id);
         }
 
         if (tours.isEmpty()) {
