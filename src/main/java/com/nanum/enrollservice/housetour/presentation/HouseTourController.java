@@ -99,10 +99,11 @@ public class HouseTourController {
     }
 
     @Operation(summary = "투어 신청시 날짜 선택했을 경우", description = "날짜를 선택하면 시간들에 대해 반환")
-    @GetMapping("/tours/houses/{houseId}/date/{date}")
+    @GetMapping("/tours/houses/{houseId}/room/{roomId}/date/{date}")
     public ResponseEntity<Object> retrieveTime(@PathVariable Long houseId,
+                                               @PathVariable Long roomId,
                                                @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date) {
-        List<HouseTourTimeResponse> houseTourTimeResponses = houseTourService.retrieveTourTime(houseId, date);
+        List<HouseTourTimeResponse> houseTourTimeResponses = houseTourService.retrieveTourTime(houseId, roomId, date);
         return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(houseTourTimeResponses));
     }
 }
