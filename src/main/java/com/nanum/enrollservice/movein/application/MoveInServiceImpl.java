@@ -1,5 +1,6 @@
 package com.nanum.enrollservice.movein.application;
 
+import com.nanum.common.HouseTourStatus;
 import com.nanum.common.MoveInStatus;
 import com.nanum.enrollservice.housetour.infrastructure.HouseTourRepository;
 import com.nanum.enrollservice.movein.domain.MoveIn;
@@ -35,20 +36,28 @@ public class MoveInServiceImpl implements MoveInService {
 
     @Override
     public void createMoveIn(MoveInDto moveInDto, Long userId) {
-        log.info(String.valueOf(userId));
         MoveIn moveIn = moveInRepository.findFirstByHouseIdAndRoomIdOrderByUpdateAtDesc(moveInDto.getHouseId(), moveInDto.getRoomId());
-
+        List<MoveInStatus> moveInStatuses = List.of(MoveInStatus.WAITING, MoveInStatus.CONTRACTING);
         if (moveIn != null) {
-            if (moveIn.getMoveInStatus().equals(MoveInStatus.WAITING) || moveIn.getMoveInStatus().equals(MoveInStatus.CONTRACTING)
-                    || moveIn.getMoveInStatus().equals(MoveInStatus.CONTRACT_COMPLETED)) {
+            if (!Objects.equals(houseTourRepository.findFirstByHouseIdAndRoomIdAndUserIdOrderByUpdateAtDesc(moveInDto.getHouseId(),
+                    moveInDto.getRoomId(), userId).getHouseTourStatus(), HouseTourStatus.TOUR_COMPLETED)) {
+                throw new OverlapException("투어 신청이 완료되지 않은 방입니다");
+            } else if (moveIn.getMoveInStatus().equals(MoveInStatus.CONTRACTING) || moveIn.getMoveInStatus().equals(MoveInStatus.CONTRACT_COMPLETED)) {
+                throw new OverlapException("이미 계약중이라 신청이 불가능한 방입니다.");
+            } else if (moveInRepository.existsByUserIdAndRoomIdAndMoveInStatusIn(userId, moveInDto.getRoomId(), moveInStatuses)) {
                 throw new OverlapException("이미 신청이 완료된 방입니다.");
+            } else if (LocalDate.from(moveInDto.getMoveDate()).isEqual(LocalDate.from(LocalDateTime.now()))) {
+                throw new DateException("입주 신청은 당일 예약이 불가능합니다.");
+            } else if (moveInDto.getMoveDate().isBefore(LocalDate.now())) {
+                throw new DateException("입주 날짜를 확인 해주세요.");
             }
         } else {
-            if (!Objects.equals(houseTourRepository.getByUserIdAndRoomIdAndHouseId
-                    (userId, moveInDto.getRoomId(), moveInDto.getHouseId()), "TOUR_COMPLETED")) {
+            log.info("****");
+
+            if (!Objects.equals(houseTourRepository.findFirstByHouseIdAndRoomIdAndUserIdOrderByUpdateAtDesc(moveInDto.getHouseId(),
+                    moveInDto.getRoomId(), userId).getHouseTourStatus(), HouseTourStatus.TOUR_COMPLETED)) {
                 throw new OverlapException("투어 신청이 완료되지 않은 방입니다");
             }
-            List<MoveInStatus> moveInStatuses = List.of(MoveInStatus.WAITING, MoveInStatus.CONTRACTING);
 
             if (moveInRepository.existsByUserIdAndRoomIdAndMoveInStatusIn(userId, moveInDto.getRoomId(), moveInStatuses)) {
                 throw new OverlapException("이미 신청이 완료된 방입니다.");
@@ -60,10 +69,10 @@ public class MoveInServiceImpl implements MoveInService {
                 throw new DateException("입주 날짜를 확인 해주세요.");
             }
 
-            MoveIn toMoveIn = moveInDto.toEntity(userId);
-
-            moveInRepository.save(toMoveIn);
         }
+        MoveIn toMoveIn = moveInDto.toEntity(userId);
+
+        moveInRepository.save(toMoveIn);
 
     }
 
