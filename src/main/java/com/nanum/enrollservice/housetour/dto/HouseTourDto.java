@@ -18,15 +18,17 @@ public class HouseTourDto {
     private Long roomId;
     private Long timeId;
     private LocalDate tourDate;
+    private Long hostId;
     private String inquiry;
     private HouseTourStatus houseTourStatus;
 
-    public HouseTour dtoToEntity(HouseTourTime houseTourTime, Long userId) {
+    public HouseTour dtoToEntity(HouseTourTime houseTourTime, Long userId, Long hostId) {
         return HouseTour.builder()
                 .houseId(houseId)
                 .roomId(roomId)
                 .userId(userId)
                 .houseTourTime(houseTourTime)
+                .hostId(hostId)
                 .tourDate(tourDate)
                 .inquiry(inquiry)
                 .houseTourStatus(houseTourStatus)

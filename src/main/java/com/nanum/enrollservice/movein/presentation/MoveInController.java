@@ -70,7 +70,7 @@ public class MoveInController {
     }
 
     @Operation(summary = "하우스 입주 신청 조회 API", description = "사용자가 하우스 입주 신청 목록을 조회하는 요청")
-    @GetMapping("/users/{userId}/move-in")
+    @GetMapping("/move-in/users/{userId}")
     public ResponseEntity<Object> retrieveMoveIn(@PathVariable Long userId) {
         List<MoveInResponse> moveInResponses = moveInService.retrieveMoveIn(userId);
         return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(moveInResponses));

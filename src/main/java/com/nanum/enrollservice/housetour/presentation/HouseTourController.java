@@ -53,13 +53,11 @@ public class HouseTourController {
     public ResponseEntity<Object> createHouseTour(@PathVariable Long houseId, @PathVariable Long roomId,
                                                   @Valid @RequestBody HouseTourRequest houseTourRequest) {
         String token = jwtTokenProvider.customResolveToken();
-        log.info(token);
         boolean isValid = jwtTokenProvider.isJwtValid(token);
         if (!isValid) {
             throw new ValidationException("토큰 유효성 검증에 실패했습니다.");
         }
         Long userId = jwtTokenProvider.getUserPk(token);
-        log.info(String.valueOf(userId));
         HouseTourDto houseTourDto = houseTourRequest.toHouseTourDto(houseId, roomId);
         houseTourService.createHouseTour(houseTourDto, userId);
 
@@ -67,10 +65,17 @@ public class HouseTourController {
         return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(result));
     }
 
-    @Operation(summary = "하우스 투어 신청 목록 조회", description = "사용자가 하우스 투어 신청 목록을 조회하는 요청")
-    @GetMapping("/users/{userId}/tours")
+    @Operation(summary = "사용자 하우스 투어 신청 목록 조회", description = "사용자가 하우스 투어 신청 목록을 조회하는 요청")
+    @GetMapping("/tours/users/{userId}")
     public ResponseEntity<Object> retrieveHouseTour(@PathVariable Long userId) {
         List<HouseTourResponse> houseTourResponses = houseTourService.retrieveHouseTour(userId, Role.USER);
+        return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(houseTourResponses));
+    }
+
+    @Operation(summary = "호스트 하우스 투어 신청 목록 조회", description = "호스트가 하우스 투어 신청 목록을 조회하는 요청")
+    @GetMapping("/tours/hosts/{hostId}")
+    public ResponseEntity<Object> retrieveHostHouseTour(@PathVariable Long hostId) {
+        List<HouseTourResponse> houseTourResponses = houseTourService.retrieveHouseTour(hostId, Role.HOST);
         return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(houseTourResponses));
     }
 
