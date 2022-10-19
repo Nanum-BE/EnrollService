@@ -13,4 +13,8 @@ public interface HouseTourRepository extends JpaRepository<HouseTour, Long> {
     List<HouseTour> findAllByUserId(Long userId);
     HouseTour findByUserId(Long userId);
     List<HouseTour> findAllByHouseIdAndRoomIdAndTourDate(Long houseId, Long roomId, LocalDate date);
+    List<HouseTour> findAllByHouseIdAndTourDate(Long houseId, LocalDate date);
+    @Query(value = "select h.houseTourStatus from HouseTour h where h.userId=:userId " +
+            "and h.roomId=:roomId and h.houseId=:houseId")
+    String getByUserIdAndRoomIdAndHouseId(Long userId, Long roomId, Long houseId);
 }
