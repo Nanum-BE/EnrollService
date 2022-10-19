@@ -2,7 +2,6 @@ package com.nanum.enrollservice.housetour.vo;
 
 import lombok.*;
 
-import java.sql.Time;
 
 @Setter
 @Getter
@@ -11,7 +10,7 @@ import java.sql.Time;
 @NoArgsConstructor
 public class HouseTourTimeResponse {
     private Long timeId;
-    private Time time;
+    private String time;
     private Boolean isAvailable;
 
 }
