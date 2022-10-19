@@ -26,6 +26,8 @@ public class MoveInResponse {
     @Schema(description = "입주 희망 날짜", defaultValue = "2022-16-08")
     private LocalDate moveDate;
 
+    private LocalDate expireDate;
+
     @Schema(description = "문의 내용", defaultValue = "문의 테스트")
     private String inquiry;
 

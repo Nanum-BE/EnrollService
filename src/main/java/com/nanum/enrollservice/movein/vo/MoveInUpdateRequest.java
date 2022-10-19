@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotNull;
+import java.time.LocalDate;
 
 @Getter
 @AllArgsConstructor
@@ -20,4 +21,6 @@ public class MoveInUpdateRequest {
     @NotNull(message = "moveInStatus cannot be null")
     @Schema(description = "하우스 입주 신청 상태", defaultValue = "APPROVED")
     private MoveInStatus moveInStatus;
+
+    private LocalDate expireDate;
 }

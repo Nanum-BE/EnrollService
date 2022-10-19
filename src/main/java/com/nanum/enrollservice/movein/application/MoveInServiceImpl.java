@@ -2,12 +2,19 @@ package com.nanum.enrollservice.movein.application;
 
 import com.nanum.common.HouseTourStatus;
 import com.nanum.common.MoveInStatus;
+import com.nanum.common.Role;
+import com.nanum.enrollservice.client.HouseServiceClient;
+import com.nanum.enrollservice.client.UserServiceClient;
+import com.nanum.enrollservice.client.vo.FeignResponse;
+import com.nanum.enrollservice.client.vo.HouseResponse;
+import com.nanum.enrollservice.client.vo.UserResponse;
 import com.nanum.enrollservice.housetour.infrastructure.HouseTourRepository;
 import com.nanum.enrollservice.movein.domain.MoveIn;
 import com.nanum.enrollservice.movein.dto.MoveInDto;
 import com.nanum.enrollservice.movein.dto.MoveInUpdateDto;
 import com.nanum.enrollservice.movein.infrastructure.MoveInRepository;
 import com.nanum.enrollservice.movein.vo.MoveInResponse;
+import com.nanum.enrollservice.movein.vo.UserInHouseResponse;
 import com.nanum.exception.DateException;
 import com.nanum.exception.NotFoundException;
 import com.nanum.exception.OverlapException;
@@ -21,6 +28,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -33,9 +41,12 @@ public class MoveInServiceImpl implements MoveInService {
     private final MoveInRepository moveInRepository;
     private final HouseTourRepository houseTourRepository;
     private final KafkaProducerImpl kafkaProducer;
+    private final HouseServiceClient houseServiceClient;
+    private final UserServiceClient userServiceClient;
 
     @Override
     public void createMoveIn(MoveInDto moveInDto, Long userId) {
+        FeignResponse<HouseResponse> houseDetails = houseServiceClient.getHouseDetails(moveInDto.getHouseId());
         MoveIn moveIn = moveInRepository.findFirstByHouseIdAndRoomIdOrderByUpdateAtDesc(moveInDto.getHouseId(), moveInDto.getRoomId());
         List<MoveInStatus> moveInStatuses = List.of(MoveInStatus.WAITING, MoveInStatus.CONTRACTING);
         if (moveIn != null) {
@@ -70,17 +81,21 @@ public class MoveInServiceImpl implements MoveInService {
             }
 
         }
-        MoveIn toMoveIn = moveInDto.toEntity(userId);
+        MoveIn toMoveIn = moveInDto.toEntity(userId, houseDetails.getResult().getHostId());
 
         moveInRepository.save(toMoveIn);
 
     }
 
     @Override
-    public List<MoveInResponse> retrieveMoveIn(Long userId) {
-
-        List<MoveIn> moveIns = moveInRepository.findAllByUserId(userId);
-
+    public List<MoveInResponse> retrieveMoveIn(Long id, Role role) {
+        List<MoveIn> moveIns = null;
+        if (role.equals(Role.USER)) {
+            moveIns = moveInRepository.findAllByUserId(id);
+        }
+        if (role.equals(Role.HOST)) {
+            moveIns = moveInRepository.findAllByHostId(id);
+        }
         ModelMapper mapper = new ModelMapper();
         mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
 
@@ -127,15 +142,34 @@ public class MoveInServiceImpl implements MoveInService {
                     }
                     throw new OverlapException("완료 처리할 수 없는 상태입니다");
                 }
-                kafkaProducer.send("house-topic",
-                        KafkaRoomDto.builder()
-                                .roomId(moveIn.getRoomId())
-                                .message("completed")
-                                .build());
+//                kafkaProducer.send("house-topic",
+//                        KafkaRoomDto.builder()
+//                                .roomId(moveIn.getRoomId())
+//                                .message("completed")
+//                                .build());
                 break;
         }
 
-        MoveIn newMoveIn = moveInUpdateDto.toEntity(moveIn);
+        if (!moveIn.getMoveDate().isBefore(moveInUpdateDto.getExpireDate())) {
+            throw new DateException("날짜를 확인해주세요.");
+        }
+
+        MoveIn newMoveIn = moveInUpdateDto.toEntity(moveIn, moveInUpdateDto.getExpireDate());
         moveInRepository.save(newMoveIn);
+    }
+
+    @Override
+    public List<UserInHouseResponse> retrieveUserInHouse(Long houseId) {
+        List<MoveIn> moveInList = moveInRepository.findAllByHouseIdAndMoveInStatus(houseId, MoveInStatus.CONTRACT_COMPLETED);
+        List<UserInHouseResponse> userInHouseResponses = new ArrayList<>();
+        moveInList.forEach(moveIn -> {
+            FeignResponse<UserResponse> user = userServiceClient.getUser(moveIn.getUserId());
+            userInHouseResponses.add(UserInHouseResponse.builder()
+                    .userId(user.getResult().getId())
+                    .nickName(user.getResult().getNickName())
+                    .profileImgUrl(user.getResult().getProfileImgUrl())
+                    .build());
+        });
+        return userInHouseResponses;
     }
 }

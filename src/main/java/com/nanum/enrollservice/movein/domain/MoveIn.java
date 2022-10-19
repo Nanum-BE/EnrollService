@@ -38,8 +38,14 @@ public class MoveIn extends BaseTimeEntity {
     private Long userId;
 
     @Column(nullable = false)
+    private Long hostId;
+
+    @Column(nullable = false)
     @Comment("희망 입주일 -> 당일 예약 불가")
     private LocalDate moveDate;
+
+    @Comment("계약 만료일")
+    private LocalDate expireDate;
 
     @Comment("문의 내용")
     private String inquiry;
