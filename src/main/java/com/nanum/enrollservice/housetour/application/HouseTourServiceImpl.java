@@ -89,7 +89,7 @@ public class HouseTourServiceImpl implements HouseTourService {
                     .houseId(houseTour.getHouseId())
                     .roomId(houseTour.getRoomId())
                     .userId(houseTour.getUserId())
-                    .time(houseTour.getHouseTourTime().getTime())
+                    .time(houseTour.getHouseTourTime().getTime().toString().substring(0,5))
                     .houseTourStatus(houseTour.getHouseTourStatus())
                     .tourDate(houseTour.getTourDate())
                     .inquiry(houseTour.getInquiry())

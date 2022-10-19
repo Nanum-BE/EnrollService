@@ -31,7 +31,7 @@ public class HouseTourResponse {
     private LocalDate tourDate;
 
     @Schema(description = "투어 희망 시간", defaultValue = "1")
-    private Time time;
+    private String time;
 
     @Schema(description = "문의 내용", defaultValue = "저녁 시간대에도 투어 가능할까요?")
     private String inquiry;

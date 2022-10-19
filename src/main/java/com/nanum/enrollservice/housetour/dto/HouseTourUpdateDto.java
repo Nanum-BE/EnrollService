@@ -23,6 +23,7 @@ public class HouseTourUpdateDto {
                         .time(houseTour.getHouseTourTime().getTime())
                         .build())
                 .tourDate(houseTour.getTourDate())
+                .hostId(houseTour.getHostId())
                 .inquiry(houseTour.getInquiry())
                 .houseTourStatus(houseTourStatus)
                 .build();
