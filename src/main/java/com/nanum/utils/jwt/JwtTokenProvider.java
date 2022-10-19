@@ -1,6 +1,7 @@
 package com.nanum.utils.jwt;
 
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -43,7 +44,7 @@ public class JwtTokenProvider {
                     .parseClaimsJws(jwt)
                     .getBody()
                     .getSubject();
-        } catch (Exception e) {
+        } catch (SignatureException e) {
             returnValue = false;
         }
         if (subject == null || subject.isEmpty()) {
