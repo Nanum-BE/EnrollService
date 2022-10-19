@@ -2,6 +2,10 @@ package com.nanum.enrollservice.housetour.application;
 
 import com.nanum.common.HouseTourStatus;
 import com.nanum.common.Role;
+import com.nanum.common.RoomStatus;
+import com.nanum.enrollservice.client.HouseServiceClient;
+import com.nanum.enrollservice.client.vo.FeignResponse;
+import com.nanum.enrollservice.client.vo.HostRoomResponse;
 import com.nanum.enrollservice.housetour.domain.HouseTour;
 import com.nanum.enrollservice.housetour.domain.HouseTourTime;
 import com.nanum.enrollservice.housetour.dto.HouseTourDto;
@@ -14,6 +18,7 @@ import com.nanum.exception.DateException;
 import com.nanum.exception.NotFoundException;
 import com.nanum.exception.OverlapException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.stereotype.Service;
@@ -25,15 +30,22 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class HouseTourServiceImpl implements HouseTourService {
     private final HouseTourRepository houseTourRepository;
     private final HouseTourTimeRepository houseTourTimeRepository;
+    private final HouseServiceClient houseServiceClient;
 
     @Override
-    public void createHouseTour(HouseTourDto houseTourDto) {
+    public void createHouseTour(HouseTourDto houseTourDto, Long userId) {
         List<HouseTourStatus> houseTourStatuses = List.of(HouseTourStatus.WAITING, HouseTourStatus.APPROVED);
+        FeignResponse<HostRoomResponse> houseStatus = houseServiceClient.getHouseStatus(houseTourDto.getHouseId(), houseTourDto.getRoomId());
 
-        if (houseTourRepository.existsByUserIdAndRoomIdAndHouseTourStatusIn(houseTourDto.getUserId(),
+        if (!houseStatus.getResult().getRoom().getStatus().equals(RoomStatus.WAITING)) {
+            throw new OverlapException("투어 신청 불가능한 방입니다");
+        }
+
+        if (houseTourRepository.existsByUserIdAndRoomIdAndHouseTourStatusIn(userId,
                 houseTourDto.getRoomId(),
                 houseTourStatuses)) {
             throw new OverlapException("이미 신청된 방입니다.");
@@ -47,7 +59,7 @@ public class HouseTourServiceImpl implements HouseTourService {
 
         HouseTourTime houseTourTime = houseTourTimeRepository.findById(houseTourDto.getTimeId()).get();
 
-        HouseTour houseTour = houseTourDto.dtoToEntity(houseTourTime);
+        HouseTour houseTour = houseTourDto.dtoToEntity(houseTourTime, userId);
 
         houseTourRepository.save(houseTour);
     }
@@ -60,6 +72,11 @@ public class HouseTourServiceImpl implements HouseTourService {
         if (role.equals(Role.USER)) {
             tours = houseTourRepository.findAllByUserId(id);
         }
+
+        if (tours.isEmpty()) {
+            throw new NotFoundException("예약된 투어 신청이 없습니다");
+        }
+
         tours.forEach(houseTour -> {
 
             houseTours.add(HouseTourResponse.builder()

@@ -11,6 +11,7 @@ import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -38,7 +39,7 @@ public class MoveIn extends BaseTimeEntity {
 
     @Column(nullable = false)
     @Comment("희망 입주일 -> 당일 예약 불가")
-    private LocalDateTime moveDate;
+    private LocalDate moveDate;
 
     @Comment("문의 내용")
     private String inquiry;

@@ -9,6 +9,7 @@ import com.nanum.enrollservice.movein.vo.MoveInRequest;
 import com.nanum.enrollservice.movein.vo.MoveInResponse;
 import com.nanum.enrollservice.movein.vo.MoveInUpdateRequest;
 import com.nanum.exception.ExceptionResponse;
+import com.nanum.utils.jwt.JwtTokenProvider;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -16,6 +17,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.http.HttpStatus;
@@ -23,11 +25,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.ValidationException;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
+@Slf4j
 @Tag(name = "하우스 입주 신청", description = "하우스 입주 신청 관련 api")
 @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "success", content = @Content(schema = @Schema(implementation = BaseResponse.class))),
@@ -37,12 +41,20 @@ import java.util.List;
 })
 public class MoveInController {
     private final MoveInService moveInService;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Operation(summary = "하우스 입주 신청 API", description = "사용자가 하우스 입주 신청을 하는 요청")
     @PostMapping("/move-in/houses/{houseId}/rooms/{roomId}")
     public ResponseEntity<Object> createMoveIn(@PathVariable Long houseId, @PathVariable Long roomId,
-                             @Valid @RequestBody MoveInRequest moveInRequest) {
-
+                                               @Valid @RequestBody MoveInRequest moveInRequest) {
+        String token = jwtTokenProvider.customResolveToken();
+        System.out.println("token = " + token);
+        boolean isValid = jwtTokenProvider.isJwtValid(token);
+        if (!isValid) {
+            throw new ValidationException("토큰 유효성 검증에 실패했습니다.");
+        }
+        Long userId = jwtTokenProvider.getUserPk(token);
+        System.out.println("userId = " + userId);
         ModelMapper mapper = new ModelMapper();
         mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
 
@@ -51,9 +63,9 @@ public class MoveInController {
         moveInDto.setRoomId(roomId);
         moveInDto.setMoveInStatus(MoveInStatus.WAITING);
 
-        moveInService.createMoveIn(moveInDto);
+        moveInService.createMoveIn(moveInDto, userId);
 
-        String result = "하우스 투어 신청이 완료되었습니다.";
+        String result = "하우스 입주 신청이 완료되었습니다.";
         return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(result));
     }
 
@@ -75,10 +87,12 @@ public class MoveInController {
         moveInService.updateMoveIn(moveInUpdateDto);
         String result;
 
-        if(moveInUpdateRequest.getMoveInStatus().equals(MoveInStatus.CONTRACTING)) {
+        if (moveInUpdateRequest.getMoveInStatus().equals(MoveInStatus.CONTRACTING)) {
             result = "하우스 입주 신청이 승인되었습니다.";
-        } else if(moveInUpdateRequest.getMoveInStatus().equals(MoveInStatus.REJECTED)) {
+        } else if (moveInUpdateRequest.getMoveInStatus().equals(MoveInStatus.REJECTED)) {
             result = "하우스 입주 신청이 거부되었습니다.";
+        } else if (moveInUpdateRequest.getMoveInStatus().equals(MoveInStatus.CONTRACT_COMPLETED)) {
+            result = "하우스 입주 계약이 완료되었습니다.";
         } else {
             result = "하우스 입주 신청이 취소되었습니다.";
         }

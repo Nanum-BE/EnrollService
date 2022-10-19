@@ -10,7 +10,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface HouseTourService {
-    void createHouseTour(HouseTourDto houseTourDto);
+    void createHouseTour(HouseTourDto houseTourDto, Long userId);
     List<HouseTourResponse> retrieveHouseTour(Long id, Role role);
     void updateHouseTour(HouseTourUpdateDto houseTourUpdateDto);
     List<HouseTourTimeResponse> retrieveTourTime(Long houseId, Long roomId, LocalDate date);

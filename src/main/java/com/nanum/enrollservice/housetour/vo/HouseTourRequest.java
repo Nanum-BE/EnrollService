@@ -16,9 +16,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class HouseTourRequest {
-    @NotNull(message = "userId cannot be null")
-    @Schema(description = "사용자 식별자", defaultValue = "1")
-    private Long userId;
 
     @NotNull(message = "tourDate cannot be null")
     @Schema(description = "투어 희망 날짜", defaultValue = "2022-10-12T20:00:00")
@@ -32,7 +29,6 @@ public class HouseTourRequest {
 
     public HouseTourDto toHouseTourDto(Long houseId, Long roomId) {
         return HouseTourDto.builder()
-                .userId(userId)
                 .houseId(houseId)
                 .roomId(roomId)
                 .timeId(timeId)
