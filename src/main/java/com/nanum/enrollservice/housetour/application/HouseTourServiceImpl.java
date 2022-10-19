@@ -154,7 +154,7 @@ public class HouseTourServiceImpl implements HouseTourService {
             timeList.forEach(houseTourTime -> {
                 houseTourTimeResponses.add(HouseTourTimeResponse.builder()
                         .timeId(houseTourTime.getId())
-                        .time(houseTourTime.getTime())
+                        .time(houseTourTime.getTime().toString().substring(0, 5))
                         .isAvailable(true)
                         .build());
             });
@@ -162,7 +162,7 @@ public class HouseTourServiceImpl implements HouseTourService {
             timeList.forEach(houseTourTime -> {
                 houseTourTimeResponses.add(HouseTourTimeResponse.builder()
                         .timeId(houseTourTime.getId())
-                        .time(houseTourTime.getTime())
+                        .time(houseTourTime.getTime().toString().substring(0, 5))
                         .isAvailable(tours.stream().noneMatch(t ->
                                 t.getHouseTourTime().getId().equals(houseTourTime.getId())))
                         .build());
