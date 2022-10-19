@@ -2,12 +2,14 @@ package com.nanum.enrollservice.movein.presentation;
 
 import com.nanum.common.BaseResponse;
 import com.nanum.common.MoveInStatus;
+import com.nanum.common.Role;
 import com.nanum.enrollservice.movein.application.MoveInService;
 import com.nanum.enrollservice.movein.dto.MoveInDto;
 import com.nanum.enrollservice.movein.dto.MoveInUpdateDto;
 import com.nanum.enrollservice.movein.vo.MoveInRequest;
 import com.nanum.enrollservice.movein.vo.MoveInResponse;
 import com.nanum.enrollservice.movein.vo.MoveInUpdateRequest;
+import com.nanum.enrollservice.movein.vo.UserInHouseResponse;
 import com.nanum.exception.ExceptionResponse;
 import com.nanum.utils.jwt.JwtTokenProvider;
 import io.swagger.v3.oas.annotations.Operation;
@@ -69,11 +71,25 @@ public class MoveInController {
         return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse<>(result));
     }
 
-    @Operation(summary = "하우스 입주 신청 조회 API", description = "사용자가 하우스 입주 신청 목록을 조회하는 요청")
+    @Operation(summary = "사용자 하우스 입주 신청 조회 API", description = "사용자가 하우스 입주 신청 목록을 조회하는 요청")
     @GetMapping("/move-in/users/{userId}")
     public ResponseEntity<Object> retrieveMoveIn(@PathVariable Long userId) {
-        List<MoveInResponse> moveInResponses = moveInService.retrieveMoveIn(userId);
+        List<MoveInResponse> moveInResponses = moveInService.retrieveMoveIn(userId, Role.USER);
         return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(moveInResponses));
+    }
+
+    @Operation(summary = "호스트 하우스 입주 신청 조회 API", description = "호스트가 하우스 입주 신청 목록을 조회하는 요청")
+    @GetMapping("/move-in/hosts/{hostId}")
+    public ResponseEntity<Object> retrieveHostMoveIn(@PathVariable Long hostId) {
+        List<MoveInResponse> moveInResponses = moveInService.retrieveMoveIn(hostId, Role.HOST);
+        return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(moveInResponses));
+    }
+
+    @Operation(summary = "호스트 하우스에 입주하는 사용자 조회 API", description = "호스트가 하우스에 입주중인 세입자 조회하는 요청")
+    @GetMapping("/move-in/houses/{houseId}")
+    public ResponseEntity<Object> retrieveHouseInUser(@PathVariable Long houseId) {
+        List<UserInHouseResponse> userInHouseResponses = moveInService.retrieveUserInHouse(houseId);
+        return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(userInHouseResponses));
     }
 
     @Operation(summary = "하우스 입주 신청 취소/승인/거부 API", description = "하우스 입주 신청을 취소/승인/거부하는 요청")
@@ -83,7 +99,6 @@ public class MoveInController {
         mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
 
         MoveInUpdateDto moveInUpdateDto = mapper.map(moveInUpdateRequest, MoveInUpdateDto.class);
-
         moveInService.updateMoveIn(moveInUpdateDto);
         String result;
 

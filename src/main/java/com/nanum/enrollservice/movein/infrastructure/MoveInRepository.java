@@ -10,5 +10,7 @@ import java.util.List;
 public interface MoveInRepository extends JpaRepository<MoveIn, Long> {
     boolean existsByUserIdAndRoomIdAndMoveInStatusIn(Long userId, Long roomId, List<MoveInStatus> moveInStatus);
     List<MoveIn> findAllByUserId(Long userId);
+    List<MoveIn> findAllByHostId(Long hostId);
+    List<MoveIn> findAllByHouseIdAndMoveInStatus(Long houseId, MoveInStatus moveInStatus);
     MoveIn findFirstByHouseIdAndRoomIdOrderByUpdateAtDesc(Long houseId, Long roomId);
 }
