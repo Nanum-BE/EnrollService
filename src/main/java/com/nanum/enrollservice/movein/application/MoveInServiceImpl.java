@@ -142,11 +142,11 @@ public class MoveInServiceImpl implements MoveInService {
                     }
                     throw new OverlapException("완료 처리할 수 없는 상태입니다");
                 }
-//                kafkaProducer.send("house-topic",
-//                        KafkaRoomDto.builder()
-//                                .roomId(moveIn.getRoomId())
-//                                .message("completed")
-//                                .build());
+                kafkaProducer.send("house-topic",
+                        KafkaRoomDto.builder()
+                                .roomId(moveIn.getRoomId())
+                                .message("completed")
+                                .build());
                 break;
         }
 
