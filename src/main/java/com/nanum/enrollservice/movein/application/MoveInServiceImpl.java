@@ -35,35 +35,36 @@ public class MoveInServiceImpl implements MoveInService {
 
     @Override
     public void createMoveIn(MoveInDto moveInDto, Long userId) {
-
+        log.info(String.valueOf(userId));
         MoveIn moveIn = moveInRepository.findFirstByHouseIdAndRoomIdOrderByUpdateAtDesc(moveInDto.getHouseId(), moveInDto.getRoomId());
 
-        if (moveIn.getMoveInStatus() != null) {
+        if (moveIn != null) {
             if (moveIn.getMoveInStatus().equals(MoveInStatus.WAITING) || moveIn.getMoveInStatus().equals(MoveInStatus.CONTRACTING)
                     || moveIn.getMoveInStatus().equals(MoveInStatus.CONTRACT_COMPLETED)) {
                 throw new OverlapException("이미 신청이 완료된 방입니다.");
             }
+        } else {
+            if (!Objects.equals(houseTourRepository.getByUserIdAndRoomIdAndHouseId
+                    (userId, moveInDto.getRoomId(), moveInDto.getHouseId()), "TOUR_COMPLETED")) {
+                throw new OverlapException("투어 신청이 완료되지 않은 방입니다");
+            }
+            List<MoveInStatus> moveInStatuses = List.of(MoveInStatus.WAITING, MoveInStatus.CONTRACTING);
+
+            if (moveInRepository.existsByUserIdAndRoomIdAndMoveInStatusIn(userId, moveInDto.getRoomId(), moveInStatuses)) {
+                throw new OverlapException("이미 신청이 완료된 방입니다.");
+            }
+
+            if (LocalDate.from(moveInDto.getMoveDate()).isEqual(LocalDate.from(LocalDateTime.now()))) {
+                throw new DateException("입주 신청은 당일 예약이 불가능합니다.");
+            } else if (moveInDto.getMoveDate().isBefore(LocalDate.now())) {
+                throw new DateException("입주 날짜를 확인 해주세요.");
+            }
+
+            MoveIn toMoveIn = moveInDto.toEntity(userId);
+
+            moveInRepository.save(toMoveIn);
         }
 
-        if (!Objects.equals(houseTourRepository.getByUserIdAndRoomIdAndHouseId
-                (userId, moveInDto.getRoomId(), moveInDto.getHouseId()), "TOUR_COMPLETED")) {
-            throw new OverlapException("투어 신청이 완료되지 않은 방입니다");
-        }
-        List<MoveInStatus> moveInStatuses = List.of(MoveInStatus.WAITING, MoveInStatus.CONTRACTING);
-
-        if (moveInRepository.existsByUserIdAndRoomIdAndMoveInStatusIn(userId, moveInDto.getRoomId(), moveInStatuses)) {
-            throw new OverlapException("이미 신청이 완료된 방입니다.");
-        }
-
-        if (LocalDate.from(moveInDto.getMoveDate()).isEqual(LocalDate.from(LocalDateTime.now()))) {
-            throw new DateException("입주 신청은 당일 예약이 불가능합니다.");
-        } else if (moveInDto.getMoveDate().isBefore(LocalDate.now())) {
-            throw new DateException("입주 날짜를 확인 해주세요.");
-        }
-
-        MoveIn toMoveIn = moveInDto.toEntity(userId);
-
-        moveInRepository.save(toMoveIn);
     }
 
     @Override
