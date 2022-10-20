@@ -63,7 +63,6 @@ public class MoveInServiceImpl implements MoveInService {
                 throw new DateException("입주 날짜를 확인 해주세요.");
             }
         } else {
-            log.info("****");
 
             if (!Objects.equals(houseTourRepository.findFirstByHouseIdAndRoomIdAndUserIdOrderByUpdateAtDesc(moveInDto.getHouseId(),
                     moveInDto.getRoomId(), userId).getHouseTourStatus(), HouseTourStatus.TOUR_COMPLETED)) {
@@ -146,6 +145,7 @@ public class MoveInServiceImpl implements MoveInService {
                         KafkaRoomDto.builder()
                                 .roomId(moveIn.getRoomId())
                                 .message("completed")
+                                .endDate(moveInUpdateDto.getExpireDate())
                                 .build());
                 break;
         }
