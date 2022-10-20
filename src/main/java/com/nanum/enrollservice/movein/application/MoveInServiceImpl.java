@@ -149,7 +149,6 @@ public class MoveInServiceImpl implements MoveInService {
                         .build();
                 kafkaProducer.send("house-topic",
                         kafkaRoomDto);
-                System.out.println("kafkaRoomDto = " + kafkaRoomDto.toString());
                 break;
         }
 
