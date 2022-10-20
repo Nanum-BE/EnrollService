@@ -21,10 +21,14 @@ public class HouseTourResponse {
     @Schema(description = "하우스 식별자", defaultValue = "1")
     private Long houseId;
 
+    private String houseName;
+
     @Schema(description = "방 식별자", defaultValue = "1")
     private Long roomId;
 
-    @Schema(description = "사용자 식별자", defaultValue = "1")
+    private String roomName;
+
+    @Schema(description = "투어 신청 사용자 식별자", defaultValue = "1")
     private Long userId;
 
     @Schema(description = "투어 희망 날짜", defaultValue = "2022-10-08")
