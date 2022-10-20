@@ -9,6 +9,7 @@ import java.time.LocalDate;
 @Data
 @Builder
 @AllArgsConstructor
+
 public class KafkaRoomDto {
     private Long roomId;
     private String message;
