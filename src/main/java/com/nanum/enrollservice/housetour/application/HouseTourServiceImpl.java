@@ -159,47 +159,22 @@ public class HouseTourServiceImpl implements HouseTourService {
         List<HouseTour> tours = houseTourRepository.findAllByHouseIdAndRoomIdAndTourDate(houseId, roomId, date);
         List<HouseTourTimeResponse> houseTourTimeResponses = new ArrayList<>();
         HashMap<Object, Object> map = new HashMap<>();
-        if (tours == null) {
-            timeList.forEach(houseTourTime -> {
-                houseTourTimeResponses.add(HouseTourTimeResponse.builder()
-                        .timeId(houseTourTime.getId())
-                        .time(houseTourTime.getTime().toString().substring(0, 5))
-                        .isAvailable(true)
-                        .build());
-            });
-        } else
-            timeList.forEach(houseTourTime -> {
-                tours.forEach(houseTour -> {
-                    map.put(houseTour.getHouseTourTime().getId(), houseTour.getHouseTourStatus());
-//                    if (houseTour.getHouseTourStatus().equals(HouseTourStatus.CANCELED)
-//                            || houseTour.getHouseTourStatus().equals(HouseTourStatus.REJECTED)) {
-//                        houseTourTimeResponses.add(HouseTourTimeResponse.builder()
-//                                .timeId(houseTourTime.getId())
-//                                .time(houseTourTime.getTime().toString().substring(0, 5))
-//                                .isAvailable(true)
-//                                .build());
-//                    } else {
-//                        houseTourTimeResponses.add(HouseTourTimeResponse.builder()
-//                                .timeId(houseTourTime.getId())
-//                                .time(houseTourTime.getTime().toString().substring(0, 5))
-//                                .isAvailable(tours.stream().noneMatch(t ->
-//                                        t.getHouseTourTime().getId().equals(houseTourTime.getId())))
-//                                .build());
-//                    }
-                });
-            });
-        map.forEach((key, value) -> {
-            System.out.println("value = " + value);
-            timeList.forEach(houseTourTime -> {
 
-            });
-            if (!value.equals(HouseTourStatus.CANCELED) || !value.equals(HouseTourStatus.REJECTED)) {
-                System.out.println("value.equals(HouseTourStatus.REJECTED) = " + value.equals(HouseTourStatus.REJECTED));
-                houseTourTimeResponses.add(HouseTourTimeResponse.builder()
-                        .timeId((Long) key)
-                        .isAvailable(false)
-                        .build());
+        tours.forEach(houseTour -> {
+            map.put(houseTour.getHouseTourTime().getId(), houseTour.getHouseTourStatus());
+        });
+
+        timeList.forEach(houseTourTime -> {
+            boolean isPossible = true;
+            if (map.containsKey(houseTourTime.getId())) {
+                isPossible = map.get(houseTourTime.getId()).equals(HouseTourStatus.CANCELED)
+                        || map.get(houseTourTime.getId()).equals(HouseTourStatus.REJECTED);
             }
+            houseTourTimeResponses.add(HouseTourTimeResponse.builder()
+                    .timeId(houseTourTime.getId())
+                    .time(houseTourTime.getTime().toString().substring(0, 5))
+                    .isAvailable(isPossible)
+                    .build());
         });
         return houseTourTimeResponses;
     }
