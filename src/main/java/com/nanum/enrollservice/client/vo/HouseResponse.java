@@ -19,5 +19,9 @@ public class HouseResponse {
     @Schema(description = "하우스의 호스트 ID")
     private Long hostId;
 
+    @Schema(description = "하우스 이름")
+    private String houseName;
+
+
 
 }
