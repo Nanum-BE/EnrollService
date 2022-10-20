@@ -2,6 +2,7 @@ package com.nanum.kafka.messagequeue;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.nanum.kafka.dto.KafkaRoomDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +22,7 @@ public class KafkaProducerImpl implements KafkaProducer {
         ObjectMapper mapper = new ObjectMapper();
         String s = "";
         try {
-            s = mapper.writeValueAsString(kafkaRoomDto);
+            s = mapper.registerModule(new JavaTimeModule()).writeValueAsString(kafkaRoomDto);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
