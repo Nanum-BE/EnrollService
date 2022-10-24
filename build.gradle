@@ -35,10 +35,10 @@ dependencies {
 	runtimeOnly 'mysql:mysql-connector-java'
 	implementation 'org.modelmapper:modelmapper:3.1.0'
 	implementation 'org.springdoc:springdoc-openapi-ui:1.6.11'
-	implementation 'org.springframework.cloud:spring-cloud-starter-config'
-	implementation 'org.springframework.cloud:spring-cloud-starter-bootstrap'
-	implementation 'org.springframework.boot:spring-boot-starter-actuator'
-	implementation 'org.springframework.cloud:spring-cloud-starter-bus-amqp'
+	implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-config', version: '3.0.0'
+	implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-bootstrap', version: '3.1.0'
+	implementation 'org.springframework.boot:spring-boot-starter-actuator:2.7.1'
+	implementation 'org.springframework.cloud:spring-cloud-starter-bus-amqp:3.0.0'
 	//kafka
 	implementation 'org.springframework.kafka:spring-kafka:2.9.0'
 }
