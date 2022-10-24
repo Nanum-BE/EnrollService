@@ -21,7 +21,7 @@ spring:
     port: 5672
     username: guest
     password: guest
-    host: 20.214.170.222
+    host: 3.37.166.100
 
 eureka:
   instance:
