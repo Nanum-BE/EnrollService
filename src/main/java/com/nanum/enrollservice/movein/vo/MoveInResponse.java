@@ -17,6 +17,8 @@ public class MoveInResponse {
     @Schema(description = "하우스 식별자", defaultValue = "1")
     private Long houseId;
 
+    private String houseName;
+
     @Schema(description = "방 식별자", defaultValue = "1")
     private Long roomId;
 

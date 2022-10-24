@@ -22,6 +22,23 @@ public class HouseResponse {
     @Schema(description = "하우스 이름")
     private String houseName;
 
+    @Schema(description = "도로명 주소")
+    private String streetAddress;
+
+    @Schema(description = "지번 주소")
+    private String lotAddress;
+
+    @Schema(description = "건물 형태")
+    private String houseType;
+
+    @Schema(description = "상세 주소")
+    private String detailAddress;
+
+    @Schema(description = "하우스 메인 이미지 경로")
+    private String houseMainImg;
+
+    @Schema(description = "우편번호")
+    private String zipCode;
 
 
 }
