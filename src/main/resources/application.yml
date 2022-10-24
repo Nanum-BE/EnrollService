@@ -17,6 +17,11 @@ spring:
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher
+  rabbitmq:
+    port: 5672
+    username: guest
+    password: guest
+    host: 20.214.170.222
 
 eureka:
   instance:
