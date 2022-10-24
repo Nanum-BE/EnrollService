@@ -201,6 +201,7 @@ public class MoveInServiceImpl implements MoveInService {
                 .houseId(moveIn.getHouseId())
                 .houseName(moveIn.getHouseName())
                 .houseImg(moveIn.getHouseImg())
+                .hostId(moveIn.getHostId())
                 .streetAddress(moveIn.getStreetAddress())
                 .detailAddress(moveIn.getDetailAddress())
                 .lotAddress(moveIn.getLotAddress())
