@@ -3,6 +3,7 @@ package com.nanum.enrollservice.movein.application;
 import com.nanum.common.Role;
 import com.nanum.enrollservice.movein.dto.MoveInDto;
 import com.nanum.enrollservice.movein.dto.MoveInUpdateDto;
+import com.nanum.enrollservice.movein.vo.MoveInCompleteHouseResponse;
 import com.nanum.enrollservice.movein.vo.MoveInResponse;
 import com.nanum.enrollservice.movein.vo.UserInHouseResponse;
 
@@ -13,4 +14,5 @@ public interface MoveInService {
     List<MoveInResponse> retrieveMoveIn(Long id, Role role);
     void updateMoveIn(MoveInUpdateDto moveInUpdateDto);
     List<UserInHouseResponse> retrieveUserInHouse(Long houseId);
+    MoveInCompleteHouseResponse retrieveHouseByInUser(Long userId);
 }

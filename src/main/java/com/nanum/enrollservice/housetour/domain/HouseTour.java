@@ -32,6 +32,16 @@ public class HouseTour extends BaseTimeEntity {
     @Column(nullable = false)
     private String houseName;
 
+    private String houseImg;
+
+    private String streetAddress;
+
+    private String lotAddress;
+
+    private String detailAddress;
+
+    private String zipCode;
+
     @Column(nullable = false)
     private Long roomId;
 

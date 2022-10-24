@@ -11,6 +11,7 @@ public interface HouseTourRepository extends JpaRepository<HouseTour, Long> {
     boolean existsByUserIdAndRoomIdAndHouseTourStatusIn(Long userId, Long roomId, List<HouseTourStatus> houseTourStatus);
     List<HouseTour> findAllByUserId(Long userId);
     List<HouseTour> findAllByHostId(Long hostId);
+
     List<HouseTour> findAllByHouseIdAndRoomIdAndTourDate(Long houseId, Long roomId, LocalDate date);
     HouseTour findFirstByHouseIdAndRoomIdAndUserIdOrderByUpdateAtDesc(Long houseId, Long roomId, Long userId);
 }

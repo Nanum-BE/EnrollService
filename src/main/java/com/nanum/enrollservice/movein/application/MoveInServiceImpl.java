@@ -6,6 +6,7 @@ import com.nanum.common.Role;
 import com.nanum.enrollservice.client.HouseServiceClient;
 import com.nanum.enrollservice.client.UserServiceClient;
 import com.nanum.enrollservice.client.vo.FeignResponse;
+import com.nanum.enrollservice.client.vo.HostRoomResponse;
 import com.nanum.enrollservice.client.vo.HouseResponse;
 import com.nanum.enrollservice.client.vo.UserResponse;
 import com.nanum.enrollservice.housetour.infrastructure.HouseTourRepository;
@@ -13,6 +14,7 @@ import com.nanum.enrollservice.movein.domain.MoveIn;
 import com.nanum.enrollservice.movein.dto.MoveInDto;
 import com.nanum.enrollservice.movein.dto.MoveInUpdateDto;
 import com.nanum.enrollservice.movein.infrastructure.MoveInRepository;
+import com.nanum.enrollservice.movein.vo.MoveInCompleteHouseResponse;
 import com.nanum.enrollservice.movein.vo.MoveInResponse;
 import com.nanum.enrollservice.movein.vo.UserInHouseResponse;
 import com.nanum.exception.DateException;
@@ -47,8 +49,10 @@ public class MoveInServiceImpl implements MoveInService {
     @Override
     public void createMoveIn(MoveInDto moveInDto, Long userId) {
         FeignResponse<HouseResponse> houseDetails = houseServiceClient.getHouseDetails(moveInDto.getHouseId());
+        HostRoomResponse result = houseServiceClient.getRoomDetails(moveInDto.getHouseId(), moveInDto.getRoomId()).getResult();
         MoveIn moveIn = moveInRepository.findFirstByHouseIdAndRoomIdOrderByUpdateAtDesc(moveInDto.getHouseId(), moveInDto.getRoomId());
         List<MoveInStatus> moveInStatuses = List.of(MoveInStatus.WAITING, MoveInStatus.CONTRACTING);
+
         if (moveIn != null) {
             if (!Objects.equals(houseTourRepository.findFirstByHouseIdAndRoomIdAndUserIdOrderByUpdateAtDesc(moveInDto.getHouseId(),
                     moveInDto.getRoomId(), userId).getHouseTourStatus(), HouseTourStatus.TOUR_COMPLETED)) {
@@ -63,7 +67,6 @@ public class MoveInServiceImpl implements MoveInService {
                 throw new DateException("입주 날짜를 확인 해주세요.");
             }
         } else {
-
             if (!Objects.equals(houseTourRepository.findFirstByHouseIdAndRoomIdAndUserIdOrderByUpdateAtDesc(moveInDto.getHouseId(),
                     moveInDto.getRoomId(), userId).getHouseTourStatus(), HouseTourStatus.TOUR_COMPLETED)) {
                 throw new OverlapException("투어 신청이 완료되지 않은 방입니다");
@@ -80,7 +83,11 @@ public class MoveInServiceImpl implements MoveInService {
             }
 
         }
-        MoveIn toMoveIn = moveInDto.toEntity(userId, houseDetails.getResult().getHostId());
+
+        MoveIn toMoveIn = moveInDto.toEntity(userId, houseDetails.getResult().getHostId(), houseDetails.getResult().getHouseName(),
+                houseDetails.getResult().getHouseMainImg(), houseDetails.getResult().getStreetAddress(),
+                houseDetails.getResult().getDetailAddress(), houseDetails.getResult().getLotAddress(),
+                houseDetails.getResult().getZipCode(), result.getRoom().getName());
 
         moveInRepository.save(toMoveIn);
 
@@ -172,6 +179,38 @@ public class MoveInServiceImpl implements MoveInService {
                     .profileImgUrl(user.getResult().getProfileImgUrl())
                     .build());
         });
+
         return userInHouseResponses;
     }
+
+    @Override
+    public MoveInCompleteHouseResponse retrieveHouseByInUser(Long userId) {
+        MoveIn moveIn = moveInRepository.findByUserIdAndMoveInStatus(userId, MoveInStatus.CONTRACT_COMPLETED);
+
+        if (moveIn == null) {
+            throw new NotFoundException("입주 완료된 하우스가 없습니다");
+        }
+
+        List<Long> userIds = new ArrayList<>();
+        List<MoveIn> moveInList = moveInRepository.findAllByHouseIdAndMoveInStatus(moveIn.getHouseId(), MoveInStatus.CONTRACT_COMPLETED);
+        moveInList.forEach(m -> {
+            userIds.add(m.getUserId());
+        });
+
+        return MoveInCompleteHouseResponse.builder()
+                .houseId(moveIn.getHouseId())
+                .houseName(moveIn.getHouseName())
+                .houseImg(moveIn.getHouseImg())
+                .streetAddress(moveIn.getStreetAddress())
+                .detailAddress(moveIn.getDetailAddress())
+                .lotAddress(moveIn.getLotAddress())
+                .zipCode(moveIn.getZipCode())
+                .roomName(moveIn.getRoomName())
+                .roomId(moveIn.getRoomId())
+                .userIds(userIds)
+                .moveDate(moveIn.getMoveDate())
+                .contractEndDate(moveIn.getExpireDate())
+                .build();
+    }
+
 }

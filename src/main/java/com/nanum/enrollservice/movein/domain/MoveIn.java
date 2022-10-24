@@ -32,7 +32,22 @@ public class MoveIn extends BaseTimeEntity {
     private Long houseId;
 
     @Column(nullable = false)
+    private String houseName;
+
+    private String houseImg;
+
+    private String streetAddress;
+
+    private String lotAddress;
+
+    private String detailAddress;
+
+    private String zipCode;
+
+    @Column(nullable = false)
     private Long roomId;
+
+    private String roomName;
 
     @Column(nullable = false)
     private Long userId;

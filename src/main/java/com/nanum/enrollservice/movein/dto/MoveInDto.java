@@ -18,11 +18,19 @@ public class MoveInDto {
     private String inquiry;
     private MoveInStatus moveInStatus;
 
-    public MoveIn toEntity(Long userId, Long hostId) {
+    public MoveIn toEntity(Long userId, Long hostId, String houseName, String houseImg, String streetAddress,
+                           String detailAddress, String lotAddress, String roomName, String zipCode) {
         return MoveIn.builder()
                 .houseId(houseId)
                 .roomId(roomId)
                 .userId(userId)
+                .houseName(houseName)
+                .houseImg(houseImg)
+                .streetAddress(streetAddress)
+                .detailAddress(detailAddress)
+                .lotAddress(lotAddress)
+                .roomName(roomName)
+                .zipCode(zipCode)
                 .hostId(hostId)
                 .moveDate(moveDate)
                 .inquiry(inquiry)

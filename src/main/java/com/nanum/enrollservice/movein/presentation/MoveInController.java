@@ -6,10 +6,7 @@ import com.nanum.common.Role;
 import com.nanum.enrollservice.movein.application.MoveInService;
 import com.nanum.enrollservice.movein.dto.MoveInDto;
 import com.nanum.enrollservice.movein.dto.MoveInUpdateDto;
-import com.nanum.enrollservice.movein.vo.MoveInRequest;
-import com.nanum.enrollservice.movein.vo.MoveInResponse;
-import com.nanum.enrollservice.movein.vo.MoveInUpdateRequest;
-import com.nanum.enrollservice.movein.vo.UserInHouseResponse;
+import com.nanum.enrollservice.movein.vo.*;
 import com.nanum.exception.ExceptionResponse;
 import com.nanum.utils.jwt.JwtTokenProvider;
 import io.swagger.v3.oas.annotations.Operation;
@@ -90,6 +87,12 @@ public class MoveInController {
     public ResponseEntity<Object> retrieveHouseInUser(@PathVariable Long houseId) {
         List<UserInHouseResponse> userInHouseResponses = moveInService.retrieveUserInHouse(houseId);
         return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(userInHouseResponses));
+    }
+
+    @GetMapping("/move-in/users/in/{userId}")
+    public ResponseEntity<Object> retrieveHouseByInUser(@PathVariable Long userId) {
+        MoveInCompleteHouseResponse response = moveInService.retrieveHouseByInUser(userId);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @Operation(summary = "하우스 입주 신청 취소/승인/거부 API", description = "하우스 입주 신청을 취소/승인/거부하는 요청")

@@ -22,12 +22,19 @@ public class HouseTourDto {
     private String inquiry;
     private HouseTourStatus houseTourStatus;
 
-    public HouseTour dtoToEntity(HouseTourTime houseTourTime, Long userId, Long hostId, String houseName, String roomName) {
+    public HouseTour dtoToEntity(HouseTourTime houseTourTime, Long userId, Long hostId, String houseName, String roomName,
+                                 String houseImg, String streetAddress, String lotAddress,
+                                 String detailAddress, String zipCode) {
         return HouseTour.builder()
                 .houseId(houseId)
                 .houseName(houseName)
                 .roomId(roomId)
                 .roomName(roomName)
+                .houseImg(houseImg)
+                .streetAddress(streetAddress)
+                .lotAddress(lotAddress)
+                .detailAddress(detailAddress)
+                .zipCode(zipCode)
                 .userId(userId)
                 .houseTourTime(houseTourTime)
                 .hostId(hostId)

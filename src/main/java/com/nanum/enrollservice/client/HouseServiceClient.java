@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 public interface HouseServiceClient {
 
     @GetMapping(value = "/api/v1/houses/{houseId}/rooms/{roomId}", produces = "application/json")
-    FeignResponse<HostRoomResponse> getHouseStatus(@PathVariable Long houseId, @PathVariable Long roomId);
+    FeignResponse<HostRoomResponse> getRoomDetails(@PathVariable Long houseId, @PathVariable Long roomId);
 
     @GetMapping(value = "/api/v1/houses/house/{houseId}", produces = "application/json")
     FeignResponse<HouseResponse> getHouseDetails(@PathVariable Long houseId);
