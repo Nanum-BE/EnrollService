@@ -20,15 +20,12 @@ import com.nanum.exception.NotFoundException;
 import com.nanum.exception.OverlapException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
-import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.List;
 
 @Service
@@ -42,10 +39,10 @@ public class HouseTourServiceImpl implements HouseTourService {
     @Override
     public void createHouseTour(HouseTourDto houseTourDto, Long userId) {
         List<HouseTourStatus> houseTourStatuses = List.of(HouseTourStatus.WAITING, HouseTourStatus.APPROVED);
-        FeignResponse<HostRoomResponse> houseStatus = houseServiceClient.getHouseStatus(houseTourDto.getHouseId(), houseTourDto.getRoomId());
+        FeignResponse<HostRoomResponse> roomDetails = houseServiceClient.getRoomDetails(houseTourDto.getHouseId(), houseTourDto.getRoomId());
         FeignResponse<HouseResponse> houseDetails = houseServiceClient.getHouseDetails(houseTourDto.getHouseId());
-        log.info(String.valueOf(houseDetails.getResult().getHostId()));
-        if (!houseStatus.getResult().getRoom().getStatus().equals(RoomStatus.WAITING)) {
+
+        if (!roomDetails.getResult().getRoom().getStatus().equals(RoomStatus.WAITING)) {
             throw new OverlapException("투어 신청 불가능한 방입니다");
         }
 
@@ -64,7 +61,10 @@ public class HouseTourServiceImpl implements HouseTourService {
         HouseTourTime houseTourTime = houseTourTimeRepository.findById(houseTourDto.getTimeId()).get();
 
         HouseTour houseTour = houseTourDto.dtoToEntity(houseTourTime, userId, houseDetails.getResult().getHostId()
-                , houseDetails.getResult().getHouseName(), houseStatus.getResult().getRoom().getName());
+                , houseDetails.getResult().getHouseName(), roomDetails.getResult().getRoom().getName(),
+                houseDetails.getResult().getHouseMainImg(), houseDetails.getResult().getStreetAddress(),
+                houseDetails.getResult().getLotAddress(), houseDetails.getResult().getDetailAddress(),
+                houseDetails.getResult().getZipCode());
 
         houseTourRepository.save(houseTour);
     }
@@ -86,8 +86,6 @@ public class HouseTourServiceImpl implements HouseTourService {
         }
 
         tours.forEach(houseTour -> {
-
-
             houseTours.add(HouseTourResponse.builder()
                     .id(houseTour.getId())
                     .houseId(houseTour.getHouseId())
@@ -103,9 +101,6 @@ public class HouseTourServiceImpl implements HouseTourService {
                     .updateAt(houseTour.getUpdateAt())
                     .build());
         });
-
-        ModelMapper mapper = new ModelMapper();
-        mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
 
         return houseTours;
     }

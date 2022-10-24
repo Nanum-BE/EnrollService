@@ -1,5 +1,5 @@
 server:
-  port: 9002
+  port: 0
 
 spring:
   application:
@@ -25,7 +25,7 @@ eureka:
     register-with-eureka: true
     fetch-registry: true
     service-url:
-      defaultZone: http://20.214.170.222:8761/eureka
+      defaultZone: http://3.37.166.100:8761/eureka
 
 springdoc:
   api-docs:

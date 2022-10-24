@@ -12,5 +12,6 @@ public interface MoveInRepository extends JpaRepository<MoveIn, Long> {
     List<MoveIn> findAllByUserId(Long userId);
     List<MoveIn> findAllByHostId(Long hostId);
     List<MoveIn> findAllByHouseIdAndMoveInStatus(Long houseId, MoveInStatus moveInStatus);
+    MoveIn findByUserIdAndMoveInStatus(Long userId, MoveInStatus moveInStatus);
     MoveIn findFirstByHouseIdAndRoomIdOrderByUpdateAtDesc(Long houseId, Long roomId);
 }
