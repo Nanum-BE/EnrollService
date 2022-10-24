@@ -19,6 +19,8 @@ public class MoveInCompleteHouseResponse {
 
     private String houseImg;
 
+    private Long hostId;
+
     private String streetAddress;
 
     private String lotAddress;
