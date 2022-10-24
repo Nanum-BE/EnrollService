@@ -42,3 +42,9 @@ springdoc:
   cache:
     disabled: true
   packages-to-scan: com.nanum
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: busrefresh, info, metrics, prometheus
