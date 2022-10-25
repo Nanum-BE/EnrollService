@@ -19,8 +19,6 @@ import com.nanum.enrollservice.housetour.vo.HouseTourTimeResponse;
 import com.nanum.exception.DateException;
 import com.nanum.exception.NotFoundException;
 import com.nanum.exception.OverlapException;
-import com.nanum.kafka.dto.KafkaUserDto;
-import com.nanum.kafka.messagequeue.KafkaProducerImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
