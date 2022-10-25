@@ -4,6 +4,7 @@ import com.nanum.common.HouseTourStatus;
 import com.nanum.common.Role;
 import com.nanum.common.RoomStatus;
 import com.nanum.enrollservice.client.HouseServiceClient;
+import com.nanum.enrollservice.client.UserServiceClient;
 import com.nanum.enrollservice.client.vo.FeignResponse;
 import com.nanum.enrollservice.client.vo.HostRoomResponse;
 import com.nanum.enrollservice.client.vo.HouseResponse;
@@ -18,15 +19,19 @@ import com.nanum.enrollservice.housetour.vo.HouseTourTimeResponse;
 import com.nanum.exception.DateException;
 import com.nanum.exception.NotFoundException;
 import com.nanum.exception.OverlapException;
+import com.nanum.kafka.dto.KafkaUserDto;
+import com.nanum.kafka.messagequeue.KafkaProducerImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +40,7 @@ public class HouseTourServiceImpl implements HouseTourService {
     private final HouseTourRepository houseTourRepository;
     private final HouseTourTimeRepository houseTourTimeRepository;
     private final HouseServiceClient houseServiceClient;
+    private final UserServiceClient userServiceClient;
 
     @Override
     public void createHouseTour(HouseTourDto houseTourDto, Long userId) {
@@ -69,10 +75,10 @@ public class HouseTourServiceImpl implements HouseTourService {
         houseTourRepository.save(houseTour);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<HouseTourResponse> retrieveHouseTour(Long id, Role role) {
 
-        List<HouseTourResponse> houseTours = new ArrayList<>();
         List<HouseTour> tours = new ArrayList<>();
         if (role.equals(Role.USER)) {
             tours = houseTourRepository.findAllByUserId(id);
@@ -85,24 +91,9 @@ public class HouseTourServiceImpl implements HouseTourService {
             throw new NotFoundException("예약된 투어 신청이 없습니다");
         }
 
-        tours.forEach(houseTour -> {
-            houseTours.add(HouseTourResponse.builder()
-                    .id(houseTour.getId())
-                    .houseId(houseTour.getHouseId())
-                    .houseName(houseTour.getHouseName())
-                    .roomName(houseTour.getRoomName())
-                    .roomId(houseTour.getRoomId())
-                    .userId(houseTour.getUserId())
-                    .time(houseTour.getHouseTourTime().getTime().toString().substring(0, 5))
-                    .houseTourStatus(houseTour.getHouseTourStatus())
-                    .tourDate(houseTour.getTourDate())
-                    .inquiry(houseTour.getInquiry())
-                    .createAt(houseTour.getCreateAt())
-                    .updateAt(houseTour.getUpdateAt())
-                    .build());
-        });
-
-        return houseTours;
+        return tours.stream()
+                .map(HouseTourResponse::of)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -124,14 +115,21 @@ public class HouseTourServiceImpl implements HouseTourService {
                 }
                 break;
             case APPROVED:
+                if (houseTour.getHouseTourStatus().equals(HouseTourStatus.APPROVED)) {
+                    throw new OverlapException("이미 처리된 요청입니다");
+                }
+                userServiceClient.sendTourApproveSMS(houseTour.getUserId());
+                break;
             case REJECTED:
                 if (!houseTour.getHouseTourStatus().equals(HouseTourStatus.WAITING)) {
                     if (houseTour.getHouseTourStatus().equals(HouseTourStatus.CANCELED)) {
                         throw new OverlapException("취소된 신청입니다.");
-                    } else {
+                    } else if (houseTour.getHouseTourStatus().equals(HouseTourStatus.REJECTED)){
                         throw new OverlapException("이미 처리된 요청입니다.");
-                    }
+                    } else
+                        throw new OverlapException("이미 처리된 요청입니다");
                 }
+                userServiceClient.sendTourRejectSMS(houseTour.getUserId());
                 break;
             case TOUR_COMPLETED:
                 if (!houseTour.getHouseTourStatus().equals(HouseTourStatus.APPROVED)) {
@@ -140,6 +138,7 @@ public class HouseTourServiceImpl implements HouseTourService {
                     }
                     throw new OverlapException("완료 처리할 수 없는 상태입니다.");
                 }
+                userServiceClient.sendTourCompleteSMS(houseTour.getUserId());
                 break;
         }
 
@@ -152,6 +151,7 @@ public class HouseTourServiceImpl implements HouseTourService {
 
         List<HouseTourTime> timeList = houseTourTimeRepository.findAll();
         List<HouseTour> tours = houseTourRepository.findAllByHouseIdAndRoomIdAndTourDate(houseId, roomId, date);
+
         List<HouseTourTimeResponse> houseTourTimeResponses = new ArrayList<>();
         HashMap<Object, Object> map = new HashMap<>();
 
@@ -173,4 +173,5 @@ public class HouseTourServiceImpl implements HouseTourService {
         });
         return houseTourTimeResponses;
     }
+
 }

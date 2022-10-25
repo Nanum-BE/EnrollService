@@ -1,11 +1,10 @@
 package com.nanum.enrollservice.housetour.vo;
 
 import com.nanum.common.HouseTourStatus;
-import com.nanum.enrollservice.housetour.domain.HouseTourTime;
+import com.nanum.enrollservice.housetour.domain.HouseTour;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
-import java.sql.Time;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -48,4 +47,22 @@ public class HouseTourResponse {
 
     @Schema(description = "수정 날짜", defaultValue = "2022-10-07T17:06:13")
     private LocalDateTime updateAt;
+
+    public static HouseTourResponse of(HouseTour houseTour) {
+        HouseTourResponse houseTourResponse = new HouseTourResponse();
+        houseTourResponse.id = houseTour.getId();
+        houseTourResponse.houseId = houseTour.getHouseId();
+        houseTourResponse.houseTourStatus = houseTour.getHouseTourStatus();
+        houseTourResponse.createAt = houseTour.getCreateAt();
+        houseTourResponse.houseName = houseTour.getHouseName();
+        houseTourResponse.roomId = houseTour.getRoomId();
+        houseTourResponse.roomName = houseTour.getRoomName();
+        houseTourResponse.userId = houseTour.getUserId();
+        houseTourResponse.tourDate = houseTour.getTourDate();
+        houseTourResponse.inquiry = houseTour.getInquiry();
+        houseTourResponse.time = houseTour.getHouseTourTime().getTime().toString().substring(0,5);
+        houseTourResponse.updateAt = houseTour.getUpdateAt();
+
+        return houseTourResponse;
+    }
 }
