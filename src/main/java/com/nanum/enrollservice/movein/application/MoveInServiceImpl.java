@@ -27,13 +27,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -93,6 +94,7 @@ public class MoveInServiceImpl implements MoveInService {
 
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<MoveInResponse> retrieveMoveIn(Long id, Role role) {
         List<MoveIn> moveIns = null;
@@ -132,15 +134,21 @@ public class MoveInServiceImpl implements MoveInService {
                                 .roomId(moveIn.getRoomId())
                                 .message("contract")
                                 .build());
+                if (moveIn.getMoveInStatus().equals(MoveInStatus.CONTRACTING)){
+                    throw new OverlapException("이미 처리된 요청입니다!");
+                }
+                userServiceClient.sendMoveInApproveSMS(moveIn.getUserId());
                 break;
             case REJECTED:
                 if (!moveIn.getMoveInStatus().equals(MoveInStatus.WAITING)) {
                     if (moveIn.getMoveInStatus().equals(MoveInStatus.CANCELED)) {
                         throw new OverlapException("취소된 신청입니다.");
-                    } else {
+                    } else if (moveIn.getMoveInStatus().equals(MoveInStatus.REJECTED)){
                         throw new OverlapException("이미 처리된 요청입니다.");
-                    }
+                    } else
+                        throw new OverlapException("이미 처리된 요청입니다.");
                 }
+                userServiceClient.sendMoveInRejectSMS(moveIn.getUserId());
                 break;
             case CONTRACT_COMPLETED:
                 if (!moveIn.getMoveInStatus().equals(MoveInStatus.CONTRACTING)) {
@@ -156,6 +164,7 @@ public class MoveInServiceImpl implements MoveInService {
                         .build();
                 kafkaProducer.send("house-topic",
                         kafkaRoomDto);
+                userServiceClient.sendMoveInCompleteSMS(moveIn.getUserId());
                 break;
         }
 
@@ -167,20 +176,18 @@ public class MoveInServiceImpl implements MoveInService {
         moveInRepository.save(newMoveIn);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<UserInHouseResponse> retrieveUserInHouse(Long houseId) {
         List<MoveIn> moveInList = moveInRepository.findAllByHouseIdAndMoveInStatus(houseId, MoveInStatus.CONTRACT_COMPLETED);
-        List<UserInHouseResponse> userInHouseResponses = new ArrayList<>();
-        moveInList.forEach(moveIn -> {
-            FeignResponse<UserResponse> user = userServiceClient.getUser(moveIn.getUserId());
-            userInHouseResponses.add(UserInHouseResponse.builder()
-                    .userId(user.getResult().getId())
-                    .nickName(user.getResult().getNickName())
-                    .profileImgUrl(user.getResult().getProfileImgUrl())
-                    .build());
-        });
+        List<FeignResponse<UserResponse>> responses = moveInList
+                .stream()
+                .map(moveIn -> userServiceClient.getUser(moveIn.getUserId()))
+                .collect(Collectors.toList());
 
-        return userInHouseResponses;
+        return responses.stream()
+                .map(UserInHouseResponse::of)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -191,27 +198,13 @@ public class MoveInServiceImpl implements MoveInService {
             throw new NotFoundException("입주 완료된 하우스가 없습니다");
         }
 
-        List<Long> userIds = new ArrayList<>();
         List<MoveIn> moveInList = moveInRepository.findAllByHouseIdAndMoveInStatus(moveIn.getHouseId(), MoveInStatus.CONTRACT_COMPLETED);
-        moveInList.forEach(m -> {
-            userIds.add(m.getUserId());
-        });
+        List<Long> userIds = moveInList
+                .stream()
+                .map(MoveIn::getUserId)
+                .collect(Collectors.toList());
 
-        return MoveInCompleteHouseResponse.builder()
-                .houseId(moveIn.getHouseId())
-                .houseName(moveIn.getHouseName())
-                .houseImg(moveIn.getHouseImg())
-                .hostId(moveIn.getHostId())
-                .streetAddress(moveIn.getStreetAddress())
-                .detailAddress(moveIn.getDetailAddress())
-                .lotAddress(moveIn.getLotAddress())
-                .zipCode(moveIn.getZipCode())
-                .roomName(moveIn.getRoomName())
-                .roomId(moveIn.getRoomId())
-                .userIds(userIds)
-                .moveDate(moveIn.getMoveDate())
-                .contractEndDate(moveIn.getExpireDate())
-                .build();
+        return new MoveInCompleteHouseResponse(moveIn, userIds);
     }
 
 }

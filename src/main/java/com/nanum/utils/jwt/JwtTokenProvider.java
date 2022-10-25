@@ -24,7 +24,6 @@ public class JwtTokenProvider {
     private String secretKey;
 
     public Long getUserPk(String token) {
-        log.info(String.valueOf(Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody().get("Id")));
         return Long.valueOf(Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody().get("Id").toString());
     }
 

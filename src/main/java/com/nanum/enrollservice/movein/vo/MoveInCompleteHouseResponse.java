@@ -1,5 +1,6 @@
 package com.nanum.enrollservice.movein.vo;
 
+import com.nanum.enrollservice.movein.domain.MoveIn;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -38,4 +39,20 @@ public class MoveInCompleteHouseResponse {
     private LocalDate moveDate;
 
     private LocalDate contractEndDate;
+
+    public MoveInCompleteHouseResponse(MoveIn moveIn, List<Long> userIds) {
+        this.houseId = moveIn.getHouseId();
+        this.houseName = moveIn.getHouseName();
+        this.hostId = moveIn.getHostId();
+        this.houseImg = moveIn.getHouseImg();
+        this.streetAddress = moveIn.getStreetAddress();
+        this.lotAddress = moveIn.getLotAddress();
+        this.detailAddress = moveIn.getDetailAddress();
+        this.zipCode = moveIn.getZipCode();
+        this.roomId = moveIn.getRoomId();
+        this.roomName = moveIn.getRoomName();
+        this.userIds = userIds;
+        this.moveDate = moveIn.getMoveDate();
+        this.contractEndDate = moveIn.getExpireDate();
+    }
 }

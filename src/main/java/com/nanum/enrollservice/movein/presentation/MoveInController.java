@@ -47,13 +47,11 @@ public class MoveInController {
     public ResponseEntity<Object> createMoveIn(@PathVariable Long houseId, @PathVariable Long roomId,
                                                @Valid @RequestBody MoveInRequest moveInRequest) {
         String token = jwtTokenProvider.customResolveToken();
-        System.out.println("token = " + token);
         boolean isValid = jwtTokenProvider.isJwtValid(token);
         if (!isValid) {
             throw new ValidationException("토큰 유효성 검증에 실패했습니다.");
         }
         Long userId = jwtTokenProvider.getUserPk(token);
-        System.out.println("userId = " + userId);
         ModelMapper mapper = new ModelMapper();
         mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
 
