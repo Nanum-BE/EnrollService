@@ -30,6 +30,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 @Slf4j
 @Tag(name = "하우스 입주 신청", description = "하우스 입주 신청 관련 api")
 @ApiResponses(value = {
