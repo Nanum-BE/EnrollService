@@ -1,7 +1,6 @@
 package com.nanum.enrollservice.housetour.vo;
 
 import com.nanum.common.HouseTourStatus;
-import com.nanum.enrollservice.housetour.domain.HouseTourTime;
 import com.nanum.enrollservice.housetour.dto.HouseTourDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -10,7 +9,6 @@ import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Getter
 @AllArgsConstructor
