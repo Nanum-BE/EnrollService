@@ -4,8 +4,6 @@ import com.nanum.enrollservice.client.vo.FeignResponse;
 import com.nanum.enrollservice.client.vo.UserResponse;
 import lombok.*;
 
-
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
