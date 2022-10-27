@@ -22,6 +22,8 @@ public class MoveInResponse {
     @Schema(description = "방 식별자", defaultValue = "1")
     private Long roomId;
 
+    private String roomName;
+
     @Schema(description = "사용자 식별자", defaultValue = "1")
     private Long userId;
 
