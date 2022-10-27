@@ -18,7 +18,7 @@ public class MoveInDto {
     private MoveInStatus moveInStatus;
 
     public MoveIn toEntity(Long userId, Long hostId, String houseName, String houseImg, String streetAddress,
-                           String detailAddress, String lotAddress, String roomName, String zipCode) {
+                           String detailAddress, String lotAddress, String zipCode, String roomName) {
         return MoveIn.builder()
                 .houseId(houseId)
                 .roomId(roomId)
