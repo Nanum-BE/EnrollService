@@ -165,11 +165,10 @@ public class MoveInServiceImpl implements MoveInService {
                 kafkaProducer.send("house-topic",
                         kafkaRoomDto);
                 userServiceClient.sendMoveInCompleteSMS(moveIn.getUserId());
+                if (!moveIn.getMoveDate().isBefore(moveInUpdateDto.getExpireDate())) {
+                    throw new DateException("날짜를 확인해주세요.");
+                }
                 break;
-        }
-
-        if (!moveIn.getMoveDate().isBefore(moveInUpdateDto.getExpireDate())) {
-            throw new DateException("날짜를 확인해주세요.");
         }
 
         MoveIn newMoveIn = moveInUpdateDto.toEntity(moveIn, moveInUpdateDto.getExpireDate());
