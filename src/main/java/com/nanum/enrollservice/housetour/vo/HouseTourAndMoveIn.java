@@ -60,35 +60,11 @@ public class HouseTourAndMoveIn {
     }
 
     public static HouseTourAndMoveIn ofs() {
-        HouseTourAndMoveIn houseTourAndMoveIn = new HouseTourAndMoveIn();
-        houseTourAndMoveIn.myHouseId = null;
-        houseTourAndMoveIn.myHouseName = null;
-        houseTourAndMoveIn.myRoomName = null;
-        houseTourAndMoveIn.myHouseImg = null;
-        houseTourAndMoveIn.moveInHouseId = null;
-        houseTourAndMoveIn.moveInHouseName = null;
-        houseTourAndMoveIn.moveInHouseImg = null;
-        houseTourAndMoveIn.moveInRoomName = null;
-        houseTourAndMoveIn.moveInDate = null;
-        houseTourAndMoveIn.tourHouseId = null;
-        houseTourAndMoveIn.tourHouseName = null;
-        houseTourAndMoveIn.tourRoomName = null;
-        houseTourAndMoveIn.tourHouseImg = null;
-        houseTourAndMoveIn.tourDate = null;
-        return houseTourAndMoveIn;
+        return new HouseTourAndMoveIn();
     }
 
     public static HouseTourAndMoveIn MoveInNullOf(HouseTour houseTour) {
         HouseTourAndMoveIn houseTourAndMoveIn = new HouseTourAndMoveIn();
-        houseTourAndMoveIn.myHouseId = null;
-        houseTourAndMoveIn.myHouseName = null;
-        houseTourAndMoveIn.myRoomName = null;
-        houseTourAndMoveIn.myHouseImg = null;
-        houseTourAndMoveIn.moveInHouseId = null;
-        houseTourAndMoveIn.moveInHouseName = null;
-        houseTourAndMoveIn.moveInHouseImg = null;
-        houseTourAndMoveIn.moveInRoomName = null;
-        houseTourAndMoveIn.moveInDate = null;
         houseTourAndMoveIn.tourHouseId = houseTour.getHouseId();
         houseTourAndMoveIn.tourHouseName = houseTour.getHouseName();
         houseTourAndMoveIn.tourRoomName = houseTour.getRoomName();
@@ -99,10 +75,6 @@ public class HouseTourAndMoveIn {
 
     public static HouseTourAndMoveIn moveNullOf(HouseTour houseTour, MoveIn moveIn) {
         HouseTourAndMoveIn houseTourAndMoveIn = new HouseTourAndMoveIn();
-        houseTourAndMoveIn.myHouseId = null;
-        houseTourAndMoveIn.myHouseName = null;
-        houseTourAndMoveIn.myRoomName = null;
-        houseTourAndMoveIn.myHouseImg = null;
         houseTourAndMoveIn.moveInHouseId = moveIn.getHouseId();
         houseTourAndMoveIn.moveInHouseName = moveIn.getHouseName();
         houseTourAndMoveIn.moveInHouseImg = moveIn.getHouseImg();

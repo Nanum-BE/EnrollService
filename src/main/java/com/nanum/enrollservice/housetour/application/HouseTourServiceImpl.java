@@ -202,36 +202,37 @@ public class HouseTourServiceImpl implements HouseTourService {
 
     @Override
     public HouseTourStatusAndMoveStatusCount retrieveTourCountAndMoveCount(Long hostId) {
-        List<HouseTour> tourWaitList = houseTourRepository.findAllByHostIdAndHouseTourStatus(hostId, HouseTourStatus.WAITING);
-        List<HouseTour> tourApproveList = houseTourRepository.findAllByHostIdAndHouseTourStatus(hostId, HouseTourStatus.APPROVED);
-        List<HouseTour> tourEndList = houseTourRepository.findAllByHostIdAndHouseTourStatus(hostId, HouseTourStatus.TOUR_COMPLETED);
-        List<MoveIn> moveInWait = moveInRepository.findAllByHostIdAndMoveInStatus(hostId, MoveInStatus.WAITING);
-        List<MoveIn> moveInProgress = moveInRepository.findAllByHostIdAndMoveInStatus(hostId, MoveInStatus.CONTRACTING);
-        List<MoveIn> moveInEnd = moveInRepository.findAllByHostIdAndMoveInStatus(hostId, MoveInStatus.CONTRACT_COMPLETED);
+        List<HouseTour> tours = houseTourRepository.findAllByHostId(hostId);
+        List<MoveIn> moveInList = moveInRepository.findAllByHostId(hostId);
+        Long tourWaitCount = tours.stream()
+                .filter(houseTour -> houseTour.getHouseTourStatus().equals(HouseTourStatus.WAITING))
+                .map(HouseTour::getId)
+                .count();
 
-        Long tourWaitCount = tourWaitList
-                .stream()
-                .map(HouseTour::getId).count();
+        Long tourApproveCount = tours.stream()
+                .filter(houseTour -> houseTour.getHouseTourStatus().equals(HouseTourStatus.APPROVED))
+                .map(HouseTour::getId)
+                .count();
 
-        Long tourApproveCount = tourApproveList
-                .stream()
-                .map(HouseTour::getId).count();
+        Long tourEndCount = tours.stream()
+                .filter(houseTour -> houseTour.getHouseTourStatus().equals(HouseTourStatus.TOUR_COMPLETED))
+                .map(HouseTour::getId)
+                .count();
 
-        Long tourEndCount = tourEndList
-                .stream()
-                .map(HouseTour::getId).count();
+        Long moveWaitCount = moveInList.stream()
+                .filter(moveIn -> moveIn.getMoveInStatus().equals(MoveInStatus.WAITING))
+                .map(MoveIn::getId)
+                .count();
 
-        Long moveWaitCount = moveInWait
-                .stream()
-                .map(MoveIn::getId).count();
+        Long moveProgressCount = moveInList.stream()
+                .filter(moveIn -> moveIn.getMoveInStatus().equals(MoveInStatus.CONTRACTING))
+                .map(MoveIn::getId)
+                .count();
 
-        Long moveProgressCount = moveInProgress
-                .stream()
-                .map(MoveIn::getId).count();
-
-        Long moveEndCount = moveInEnd
-                .stream()
-                .map(MoveIn::getId).count();
+        Long moveEndCount = moveInList.stream()
+                .filter(moveIn -> moveIn.getMoveInStatus().equals(MoveInStatus.CONTRACT_COMPLETED))
+                .map(MoveIn::getId)
+                .count();
 
         return HouseTourStatusAndMoveStatusCount.builder()
                 .MoveInWait(moveWaitCount)
