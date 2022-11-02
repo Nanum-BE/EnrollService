@@ -6,10 +6,7 @@ import com.nanum.common.Role;
 import com.nanum.enrollservice.housetour.application.HouseTourService;
 import com.nanum.enrollservice.housetour.dto.HouseTourDto;
 import com.nanum.enrollservice.housetour.dto.HouseTourUpdateDto;
-import com.nanum.enrollservice.housetour.vo.HouseTourRequest;
-import com.nanum.enrollservice.housetour.vo.HouseTourResponse;
-import com.nanum.enrollservice.housetour.vo.HouseTourTimeResponse;
-import com.nanum.enrollservice.housetour.vo.HouseTourUpdateRequest;
+import com.nanum.enrollservice.housetour.vo.*;
 import com.nanum.exception.ExceptionResponse;
 import com.nanum.utils.jwt.JwtTokenProvider;
 import io.swagger.v3.oas.annotations.Operation;
@@ -111,5 +108,17 @@ public class HouseTourController {
                                                @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date) {
         List<HouseTourTimeResponse> houseTourTimeResponses = houseTourService.retrieveTourTime(houseId, roomId, date);
         return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(houseTourTimeResponses));
+    }
+
+    @GetMapping("/tours/moveIn/users/{userId}")
+    public ResponseEntity<Object> retrieveTourAndMoveIn(@PathVariable Long userId) {
+        HouseTourAndMoveIn response = houseTourService.retrieveTourAndMoveIn(userId);
+        return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(response));
+    }
+
+    @GetMapping("/tours/moveIn/status/host/{hostId}")
+    public ResponseEntity<Object> retrieveTourCountAndMoveCount(@PathVariable Long hostId) {
+        HouseTourStatusAndMoveStatusCount response = houseTourService.retrieveTourCountAndMoveCount(hostId);
+        return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse<>(response));
     }
 }

@@ -21,7 +21,7 @@ spring:
     port: 5672
     username: guest
     password: guest
-    host: 3.37.166.100
+    host: 3.35.80.242
 
 eureka:
   instance:
@@ -30,7 +30,7 @@ eureka:
     register-with-eureka: true
     fetch-registry: true
     service-url:
-      defaultZone: http://3.37.166.100:8761/eureka
+      defaultZone: http://3.35.80.242:8761/eureka
 
 springdoc:
   api-docs:
