@@ -1,5 +1,5 @@
 spring:
   cloud:
     config:
-      uri: http://3.37.166.100:8888
+      uri: http://3.35.80.242:8888
       name: enroll-service

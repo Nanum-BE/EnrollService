@@ -1,6 +1,7 @@
 package com.nanum.enrollservice.housetour.application;
 
 import com.nanum.common.HouseTourStatus;
+import com.nanum.common.MoveInStatus;
 import com.nanum.common.Role;
 import com.nanum.common.RoomStatus;
 import com.nanum.enrollservice.client.HouseServiceClient;
@@ -14,8 +15,12 @@ import com.nanum.enrollservice.housetour.dto.HouseTourDto;
 import com.nanum.enrollservice.housetour.dto.HouseTourUpdateDto;
 import com.nanum.enrollservice.housetour.infrastructure.HouseTourRepository;
 import com.nanum.enrollservice.housetour.infrastructure.HouseTourTimeRepository;
+import com.nanum.enrollservice.housetour.vo.HouseTourAndMoveIn;
 import com.nanum.enrollservice.housetour.vo.HouseTourResponse;
+import com.nanum.enrollservice.housetour.vo.HouseTourStatusAndMoveStatusCount;
 import com.nanum.enrollservice.housetour.vo.HouseTourTimeResponse;
+import com.nanum.enrollservice.movein.domain.MoveIn;
+import com.nanum.enrollservice.movein.infrastructure.MoveInRepository;
 import com.nanum.exception.DateException;
 import com.nanum.exception.NotFoundException;
 import com.nanum.exception.OverlapException;
@@ -39,6 +44,7 @@ public class HouseTourServiceImpl implements HouseTourService {
     private final HouseTourTimeRepository houseTourTimeRepository;
     private final HouseServiceClient houseServiceClient;
     private final UserServiceClient userServiceClient;
+    private final MoveInRepository moveInRepository;
 
     @Override
     public void createHouseTour(HouseTourDto houseTourDto, Long userId) {
@@ -122,7 +128,7 @@ public class HouseTourServiceImpl implements HouseTourService {
                 if (!houseTour.getHouseTourStatus().equals(HouseTourStatus.WAITING)) {
                     if (houseTour.getHouseTourStatus().equals(HouseTourStatus.CANCELED)) {
                         throw new OverlapException("취소된 신청입니다.");
-                    } else if (houseTour.getHouseTourStatus().equals(HouseTourStatus.REJECTED)){
+                    } else if (houseTour.getHouseTourStatus().equals(HouseTourStatus.REJECTED)) {
                         throw new OverlapException("이미 처리된 요청입니다.");
                     } else
                         throw new OverlapException("이미 처리된 요청입니다");
@@ -170,6 +176,71 @@ public class HouseTourServiceImpl implements HouseTourService {
                     .build());
         });
         return houseTourTimeResponses;
+    }
+
+    @Override
+    public HouseTourAndMoveIn retrieveTourAndMoveIn(Long userId) {
+        HouseTour houseTour;
+        MoveIn moveIn;
+        MoveIn move;
+        // 투어 신청 대기중인 목록중에서 제일 최신걸로 1개
+        houseTour = houseTourRepository.findFirstByUserIdOrderByUpdateAtDesc(userId);
+        // 입주 신청 대기중인 목록중에서 제일 최신걸로 1개
+        moveIn = moveInRepository.findFirstByUserIdOrderByUpdateAtDesc(userId);
+        // 입주 완료된 상태에서 제일 최신걸로 1개
+        move = moveInRepository.findFirstByUserIdAndMoveInStatusOrderByUpdateAtDesc(userId, MoveInStatus.CONTRACT_COMPLETED);
+
+        if (houseTour == null) {
+            return HouseTourAndMoveIn.ofs();
+        } else if (moveIn == null) {
+            return HouseTourAndMoveIn.MoveInNullOf(houseTour);
+        } else if (move == null) {
+            return HouseTourAndMoveIn.moveNullOf(houseTour, moveIn);
+        }
+        return HouseTourAndMoveIn.of(houseTour, moveIn, move);
+    }
+
+    @Override
+    public HouseTourStatusAndMoveStatusCount retrieveTourCountAndMoveCount(Long hostId) {
+        List<HouseTour> tourWaitList = houseTourRepository.findAllByHostIdAndHouseTourStatus(hostId, HouseTourStatus.WAITING);
+        List<HouseTour> tourApproveList = houseTourRepository.findAllByHostIdAndHouseTourStatus(hostId, HouseTourStatus.APPROVED);
+        List<HouseTour> tourEndList = houseTourRepository.findAllByHostIdAndHouseTourStatus(hostId, HouseTourStatus.TOUR_COMPLETED);
+        List<MoveIn> moveInWait = moveInRepository.findAllByHostIdAndMoveInStatus(hostId, MoveInStatus.WAITING);
+        List<MoveIn> moveInProgress = moveInRepository.findAllByHostIdAndMoveInStatus(hostId, MoveInStatus.CONTRACTING);
+        List<MoveIn> moveInEnd = moveInRepository.findAllByHostIdAndMoveInStatus(hostId, MoveInStatus.CONTRACT_COMPLETED);
+
+        Long tourWaitCount = tourWaitList
+                .stream()
+                .map(HouseTour::getId).count();
+
+        Long tourApproveCount = tourApproveList
+                .stream()
+                .map(HouseTour::getId).count();
+
+        Long tourEndCount = tourEndList
+                .stream()
+                .map(HouseTour::getId).count();
+
+        Long moveWaitCount = moveInWait
+                .stream()
+                .map(MoveIn::getId).count();
+
+        Long moveProgressCount = moveInProgress
+                .stream()
+                .map(MoveIn::getId).count();
+
+        Long moveEndCount = moveInEnd
+                .stream()
+                .map(MoveIn::getId).count();
+
+        return HouseTourStatusAndMoveStatusCount.builder()
+                .MoveInWait(moveWaitCount)
+                .MoveInProgress(moveProgressCount)
+                .MoveInComplete(moveEndCount)
+                .TourWait(tourWaitCount)
+                .TourProgress(tourApproveCount)
+                .TourComplete(tourEndCount)
+                .build();
     }
 
 }
